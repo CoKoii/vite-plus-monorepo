@@ -1,10 +1,6 @@
 {
   "name": "vite-plus-monorepo",
   "type": "module",
-  "scripts": {
-    "ready": "vp check && vp run -r test && vp run -r build",
-    "dev": "vp run website#dev"
-  },
   "devDependencies": {
     "@types/node": "catalog:",
     "@vite-plus-monorepo/tsconfig": "workspace:*",
