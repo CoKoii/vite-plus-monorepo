@@ -1,0 +1,19 @@
+{
+  "name": "vite-plus-monorepo",
+  "type": "module",
+  "scripts": {
+    "ready": "vp check && vp run -r test && vp run -r build",
+    "dev": "vp run website#dev"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@vite-plus-monorepo/tsconfig": "workspace:*",
+    "vite": "catalog:",
+    "vite-plus": "catalog:"
+  },
+  "engines": {
+    "node": ">=24.18.1",
+    "pnpm": ">=11.18.0"
+  },
+  "packageManager": "pnpm@11.18.0"
+}
