@@ -7,9 +7,11 @@
     "vite": "catalog:",
     "vite-plus": "catalog:"
   },
-  "engines": {
-    "node": ">=24.18.1",
-    "pnpm": ">=11.18.0"
-  },
-  "packageManager": "pnpm@11.18.0"
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "11.20.0",
+      "onFail": "download"
+    }
+  }
 }
