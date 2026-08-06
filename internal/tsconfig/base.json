@@ -20,7 +20,6 @@
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
-    "exactOptionalPropertyTypes": true,
     "noPropertyAccessFromIndexSignature": true
   },
   "exclude": ["dist"]

@@ -4,8 +4,13 @@
   "devDependencies": {
     "@types/node": "catalog:",
     "@vite-plus-monorepo/tsconfig": "workspace:*",
+    "typescript": "catalog:",
     "vite": "catalog:",
-    "vite-plus": "catalog:"
+    "vite-plus": "catalog:",
+    "vue-tsc": "catalog:"
+  },
+  "scripts": {
+    "dev": "vp run @vite-plus-monorepo/web#dev"
   },
   "devEngines": {
     "packageManager": {

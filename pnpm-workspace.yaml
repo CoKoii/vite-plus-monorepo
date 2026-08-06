@@ -1,13 +1,18 @@
 packages:
+  - "apps/*"
   - "internal/*"
 
 catalogMode: prefer
 
 catalog:
   "@types/node": ^26.1.2
-  typescript: ^7.0.2
+  "@vitejs/plugin-vue": ^6.0.8
+  typescript: ^5.9.3
   vite: npm:@voidzero-dev/vite-plus-core@0.2.8
+  vite-plugin-vue-devtools: ^8.2.1
   vite-plus: 0.2.8
+  vue: ^3.5.41
+  vue-tsc: ^3.3.9
 
 minimumReleaseAgeExclude:
   - "@voidzero-dev/vite-plus-core@0.2.8"
