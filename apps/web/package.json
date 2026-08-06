@@ -4,15 +4,10 @@
   "type": "module",
   "scripts": {
     "dev": "vp dev",
-    "build": "run-p type-check \"build-only {@}\" --",
+    "build": "vue-tsc --noEmit && vp build",
     "preview": "vp preview",
     "build-only": "vp build",
-    "type-check": "vue-tsc --build",
-    "lint": "run-s \"lint:*\"",
-    "lint:oxlint": "vp lint . --fix",
-    "lint:eslint": "vp lint . --fix",
-    "format": "vp fmt src/",
-    "prepare": "vp config"
+    "type-check": "vue-tsc --noEmit"
   },
   "dependencies": {
     "vue": "catalog:"

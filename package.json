@@ -1,6 +1,12 @@
 {
   "name": "vite-plus-monorepo",
   "type": "module",
+  "scripts": {
+    "dev": "vp run @vite-plus-monorepo/web#dev",
+    "type-check": "vp run -r type-check",
+    "lint": "vp lint . --fix",
+    "format": "vp fmt ."
+  },
   "devDependencies": {
     "@types/node": "catalog:",
     "@vite-plus-monorepo/tsconfig": "workspace:*",
@@ -8,9 +14,6 @@
     "vite": "catalog:",
     "vite-plus": "catalog:",
     "vue-tsc": "catalog:"
-  },
-  "scripts": {
-    "dev": "vp run @vite-plus-monorepo/web#dev"
   },
   "devEngines": {
     "packageManager": {
