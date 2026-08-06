@@ -2,8 +2,9 @@ import { defineConfig } from "vite-plus";
 
 export default defineConfig({
   fmt: {
-    ignorePatterns: ["dist"],
+    ignorePatterns: ["dist/**"],
     sortImports: true,
+    sortPackageJson: true,
   },
 
   lint: {
