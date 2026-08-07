@@ -1,6 +1,5 @@
 {
   "name": "@vite-plus-monorepo/web",
-  "private": true,
   "type": "module",
   "scripts": {
     "dev": "vp dev",
