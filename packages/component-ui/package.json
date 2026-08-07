@@ -1,0 +1,14 @@
+{
+  "name": "@vite-plus-monorepo/component-ui",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "peerDependencies": {
+    "antdv-next": "catalog:",
+    "vue": "catalog:"
+  }
+}

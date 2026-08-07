@@ -9,6 +9,8 @@
     "type-check": "vue-tsc --noEmit"
   },
   "dependencies": {
+    "@vite-plus-monorepo/component-ui": "workspace:*",
+    "antdv-next": "catalog:",
     "pinia": "catalog:",
     "vue": "catalog:",
     "vue-router": "catalog:"

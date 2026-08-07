@@ -1,12 +1,14 @@
 packages:
   - "apps/*"
   - "internal/*"
+  - "packages/*"
 
 catalogMode: prefer
 
 catalog:
   "@types/node": ^26.1.2
   "@vitejs/plugin-vue": ^6.0.8
+  antdv-next: ^1.4.6
   pinia: ^4.0.2
   typescript: ^5.9.3
   vite: npm:@voidzero-dev/vite-plus-core@0.2.8
