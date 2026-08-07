@@ -3,6 +3,7 @@
   "extends": "./base.json",
   "compilerOptions": {
     "lib": ["ESNext"],
-    "types": ["node"]
+    "types": ["node"],
+    "emitDecoratorMetadata": true
   }
 }
