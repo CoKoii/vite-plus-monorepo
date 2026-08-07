@@ -1,0 +1,19 @@
+{
+  "name": "@vite-plus-monorepo/server",
+  "type": "module",
+  "scripts": {
+    "dev": "vp dev",
+    "build": "vue-tsc --noEmit && vp build",
+    "preview": "vp preview",
+    "build-only": "vp build",
+    "type-check": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "@nestjs/cli": "catalog:",
+    "@nestjs/common": "catalog:",
+    "@nestjs/core": "catalog:",
+    "@nestjs/platform-fastify": "catalog:",
+    "@nestjs/schematics": "catalog:",
+    "reflect-metadata": "catalog:"
+  }
+}

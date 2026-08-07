@@ -6,10 +6,17 @@ packages:
 catalogMode: prefer
 
 catalog:
+  '@nestjs/cli': ^11.0.24
+  '@nestjs/common': ^11.1.28
+  '@nestjs/core': ^11.1.28
+  '@nestjs/platform-express': ^11.1.28
+  '@nestjs/platform-fastify': ^11.1.28
+  '@nestjs/schematics': ^11.1.0
   "@types/node": ^26.1.2
   "@vitejs/plugin-vue": ^6.0.8
   antdv-next: ^1.4.6
   pinia: ^4.0.2
+  reflect-metadata: ^0.2.2
   typescript: ^5.9.3
   vite: npm:@voidzero-dev/vite-plus-core@0.2.8
   vite-plugin-vue-devtools: ^8.2.1
