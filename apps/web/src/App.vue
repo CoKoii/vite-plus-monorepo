@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import { ref } from "vue";
-
-const message = ref("Hello Vue!");
+import { RouterView } from "vue-router";
 </script>
 
 <template>
-  <h1>{{ message }}</h1>
+  <RouterView />
 </template>
