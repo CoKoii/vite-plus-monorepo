@@ -2,7 +2,7 @@
   "name": "@vite-plus-monorepo/server",
   "type": "module",
   "scripts": {
-    "dev": "vp build && concurrently \"vp build --watch\" \"node --watch dist/main.js\"",
+    "dev": "nest start --watch",
     "build": "tsc --noEmit && vp build",
     "preview": "node dist/main.js",
     "build-only": "vp build",
