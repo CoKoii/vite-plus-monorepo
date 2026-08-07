@@ -2,6 +2,7 @@
   "name": "vite-plus-monorepo",
   "type": "module",
   "scripts": {
+    "dev": "vp run -r --parallel --log labeled dev",
     "type-check": "vp run -r type-check",
     "lint": "vp lint . --fix",
     "format": "vp fmt ."
