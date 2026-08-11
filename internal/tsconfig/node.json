@@ -5,6 +5,7 @@
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "emitDecoratorMetadata": true,
-    "noEmit": false
+    "noEmit": false,
+    "noEmitOnError": true
   }
 }

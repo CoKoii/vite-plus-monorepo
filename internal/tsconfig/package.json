@@ -1,4 +1,3 @@
 {
-  "name": "@vite-plus-monorepo/tsconfig",
-  "type": "module"
+  "name": "@vite-plus-monorepo/tsconfig"
 }
