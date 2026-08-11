@@ -1,13 +1,14 @@
 import { Controller, Get } from "@nestjs/common";
-
-import { AppService } from "./app.service.js";
+import { ConfigService } from "@nestjs/config";
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(private configService: ConfigService) {}
 
   @Get()
   getHello(): string {
-    return this.appService.getHello();
+    const dbHost = this.configService.get("DB_HOST");
+    console.log("DB_HOST:", dbHost);
+    return "";
   }
 }

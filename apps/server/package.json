@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "nest start --watch",
     "build": "nest build",
-    "preview": "node dist/main.js",
+    "preview": "NODE_ENV=production node dist/main.js",
     "check": "tsc --noEmit"
   },
   "dependencies": {
@@ -12,6 +12,7 @@
     "@nestjs/config": "catalog:",
     "@nestjs/core": "catalog:",
     "@nestjs/platform-fastify": "catalog:",
+    "joi": "catalog:",
     "reflect-metadata": "catalog:"
   },
   "devDependencies": {
