@@ -11,9 +11,7 @@
     "@types/node": "catalog:",
     "@vite-plus-monorepo/tsconfig": "workspace:*",
     "typescript": "catalog:",
-    "vite": "catalog:",
-    "vite-plus": "catalog:",
-    "vue-tsc": "catalog:"
+    "vite-plus": "catalog:"
   },
   "devEngines": {
     "packageManager": {

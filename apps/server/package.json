@@ -10,12 +10,12 @@
   "dependencies": {
     "@nestjs/common": "catalog:",
     "@nestjs/core": "catalog:",
-    "@nestjs/mapped-types": "catalog:",
     "@nestjs/platform-fastify": "catalog:",
     "reflect-metadata": "catalog:"
   },
   "devDependencies": {
     "@nestjs/cli": "catalog:",
-    "@nestjs/schematics": "catalog:"
+    "@nestjs/schematics": "catalog:",
+    "typescript": "catalog:"
   }
 }

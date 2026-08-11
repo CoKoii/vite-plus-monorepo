@@ -18,6 +18,7 @@
     "@vitejs/plugin-vue": "catalog:",
     "vite": "catalog:",
     "vite-plugin-vue-devtools": "catalog:",
-    "vite-plus": "catalog:"
+    "vite-plus": "catalog:",
+    "vue-tsc": "catalog:"
   }
 }

@@ -7,6 +7,14 @@
       "default": "./src/index.ts"
     }
   },
+  "scripts": {
+    "check": "vue-tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vue-tsc": "catalog:"
+  },
   "peerDependencies": {
     "antdv-next": "catalog:",
     "vue": "catalog:"
