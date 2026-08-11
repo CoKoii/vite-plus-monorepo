@@ -2,10 +2,10 @@
   "name": "@vite-plus-monorepo/server",
   "type": "module",
   "scripts": {
-    "dev": "vp build && concurrently \"vp build --watch\" \"node --watch dist/main.js\"",
-    "build": "tsc --noEmit && vp build",
+    "dev": "nest start --watch",
+    "build": "tsc --noEmit && nest build",
     "preview": "node dist/main.js",
-    "build-only": "vp build",
+    "build-only": "nest build",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
@@ -17,8 +17,6 @@
   },
   "devDependencies": {
     "@nestjs/cli": "catalog:",
-    "@nestjs/schematics": "catalog:",
-    "concurrently": "catalog:",
-    "vite-plus": "catalog:"
+    "@nestjs/schematics": "catalog:"
   }
 }
