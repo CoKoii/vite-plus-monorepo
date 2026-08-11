@@ -3,9 +3,9 @@
   "type": "module",
   "scripts": {
     "dev": "vp run -r --parallel --log labeled dev",
-    "type-check": "vp run -r type-check",
-    "lint": "vp lint . --fix",
-    "format": "vp fmt ."
+    "build": "vp run -r build",
+    "check": "vp run -r check && vp lint . --fix && vp fmt .",
+    "preview": "vp run -r --parallel preview"
   },
   "devDependencies": {
     "@types/node": "catalog:",

@@ -3,10 +3,9 @@
   "type": "module",
   "scripts": {
     "dev": "nest start --watch",
-    "build": "tsc --noEmit && nest build",
+    "build": "nest build",
     "preview": "node dist/main.js",
-    "build-only": "nest build",
-    "type-check": "tsc --noEmit"
+    "check": "tsc --noEmit"
   },
   "dependencies": {
     "@nestjs/common": "catalog:",

@@ -3,10 +3,9 @@
   "type": "module",
   "scripts": {
     "dev": "vp dev",
-    "build": "vue-tsc --noEmit && vp build",
+    "build": "vp build",
     "preview": "vp preview",
-    "build-only": "vp build",
-    "type-check": "vue-tsc --noEmit"
+    "check": "vue-tsc --noEmit"
   },
   "dependencies": {
     "@vite-plus-monorepo/component-ui": "workspace:*",
