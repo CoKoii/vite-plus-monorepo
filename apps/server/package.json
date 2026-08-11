@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@nestjs/common": "catalog:",
+    "@nestjs/config": "catalog:",
     "@nestjs/core": "catalog:",
     "@nestjs/platform-fastify": "catalog:",
     "reflect-metadata": "catalog:"
