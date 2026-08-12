@@ -1,10 +1,11 @@
-import { Module } from "@nestjs/common";
+import { Global, Logger, Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import * as joi from "joi";
 
 import { AppController } from "./app.controller.js";
 
 const envFilePath = [`.env.${process.env["NODE_ENV"] || "development"}`, ".env"];
+@Global()
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -16,6 +17,7 @@ const envFilePath = [`.env.${process.env["NODE_ENV"] || "development"}`, ".env"]
     }),
   ],
   controllers: [AppController],
-  providers: [],
+  providers: [Logger],
+  exports: [Logger],
 })
 export class AppModule {}

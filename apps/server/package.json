@@ -13,7 +13,9 @@
     "@nestjs/core": "catalog:",
     "@nestjs/platform-fastify": "catalog:",
     "joi": "catalog:",
-    "reflect-metadata": "catalog:"
+    "nest-winston": "catalog:",
+    "reflect-metadata": "catalog:",
+    "winston": "catalog:"
   },
   "devDependencies": {
     "@nestjs/cli": "catalog:",
