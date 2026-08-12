@@ -268,6 +268,9 @@ catalogs:
     winston:
       specifier: ^3.19.0
       version: 3.19.0
+    winston-daily-rotate-file:
+      specifier: ^5.0.0
+      version: 5.0.0
 
 importers:
 
@@ -297,9 +300,6 @@ importers:
       '@nestjs/core':
         specifier: 'catalog:'
         version: 11.1.28(@nestjs/common@11.1.28(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@10.2.2))(@nestjs/platform-express@11.1.28)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      '@nestjs/mapped-types':
-        specifier: '*'
-        version: 2.1.1(@nestjs/common@11.1.28(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@10.2.2))(reflect-metadata@0.2.2)
       '@nestjs/platform-fastify':
         specifier: 'catalog:'
         version: 11.1.28(@nestjs/common@11.1.28(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@10.2.2))(@nestjs/core@11.1.28)
@@ -315,6 +315,9 @@ importers:
       winston:
         specifier: 'catalog:'
         version: 3.19.0
+      winston-daily-rotate-file:
+        specifier: 'catalog:'
+        version: 5.0.0(winston@3.19.0)
     devDependencies:
       '@nestjs/cli':
         specifier: 'catalog:'
@@ -333,7 +336,7 @@ importers:
         version: link:../../packages/component-ui
       antdv-next:
         specifier: 'catalog:'
-        version: 1.4.6(vue@3.5.41(typescript@5.9.3))
+        version: 1.4.6(moment@2.30.1)(vue@3.5.41(typescript@5.9.3))
       pinia:
         specifier: 'catalog:'
         version: 4.0.2(@vue/devtools-api@8.2.1)(typescript@5.9.3)(vue@3.5.41(typescript@5.9.3))
@@ -366,7 +369,7 @@ importers:
     dependencies:
       antdv-next:
         specifier: 'catalog:'
-        version: 1.4.6(vue@3.5.41(typescript@5.9.3))
+        version: 1.4.6(moment@2.30.1)(vue@3.5.41(typescript@5.9.3))
       vue:
         specifier: 'catalog:'
         version: 3.5.41(typescript@5.9.3)
@@ -887,19 +890,6 @@ packages:
       '@nestjs/platform-express':
         optional: true
       '@nestjs/websockets':
-        optional: true
-
-  '@nestjs/mapped-types@2.1.1':
-    resolution: {integrity: sha512-SCCoMEJ6jdeI5h/N+KCVF1+pmg/hmEkNA5nHTS8Gvww7T/LCl4o1gFLinw2iQ60w7slFkszHcGLKGdazVI4F8A==}
-    peerDependencies:
-      '@nestjs/common': ^10.0.0 || ^11.0.0
-      class-transformer: ^0.4.0 || ^0.5.0
-      class-validator: ^0.13.0 || ^0.14.0 || ^0.15.0
-      reflect-metadata: ^0.1.12 || ^0.2.0
-    peerDependenciesMeta:
-      class-transformer:
-        optional: true
-      class-validator:
         optional: true
 
   '@nestjs/platform-express@11.1.28':
@@ -2554,6 +2544,9 @@ packages:
   fecha@4.2.3:
     resolution: {integrity: sha512-OP2IUU6HeYKJi3i0z4A19kHMQoLVs4Hc+DPqqxI2h/DPZHTm/vjsfC6P0b4jCMy14XizLBqvndQ+UilD7707Jw==}
 
+  file-stream-rotator@0.6.1:
+    resolution: {integrity: sha512-u+dBid4PvZw17PmDeRcNOtCP9CCK/9lRN2w+r1xIS7yOL9JFrIBKTvrYsxT4P0pGtThYTn++QS5ChHaUov3+zQ==}
+
   file-type@21.3.4:
     resolution: {integrity: sha512-Ievi/yy8DS3ygGvT47PjSfdFoX+2isQueoYP1cntFW1JLYAuS4GD7NUPGg4zv2iZfV52uDyk5w5Z0TdpRS6Q1g==}
     engines: {node: '>=20'}
@@ -2943,6 +2936,9 @@ packages:
   mlly@1.8.2:
     resolution: {integrity: sha512-d+ObxMQFmbt10sretNDytwt85VrbkhhUA/JBGm1MPaWJ65Cl4wOgLaB1NYvJSZ0Ef03MMEU/0xpPMXUIQ29UfA==}
 
+  moment@2.30.1:
+    resolution: {integrity: sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how==}
+
   mrmime@2.0.1:
     resolution: {integrity: sha512-Y3wQdFg2Va6etvQ5I82yUhGdsKrcYox6p7FfL1LbK2J4V01F9TGlepTIhnK24t7koZibmg82KGglhA1XK5IsLQ==}
     engines: {node: '>=10'}
@@ -2995,6 +2991,10 @@ packages:
   object-assign@4.1.1:
     resolution: {integrity: sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==}
     engines: {node: '>=0.10.0'}
+
+  object-hash@3.0.0:
+    resolution: {integrity: sha512-RSn9F68PjH9HqtltsSnqYC1XXoWe9Bju5+213R98cNGttag9q9yAOTzdbsqvIa7aNm5WffBZFpWYr2aWrklWAw==}
+    engines: {node: '>= 6'}
 
   object-inspect@1.13.4:
     resolution: {integrity: sha512-W67iLl4J2EXEGTbfeHCffrjDfitvLANg0UlX3wFUUSTx92KXRFegMHUVgSqE+wvhAbi4WqjGg9czysTV2Epbew==}
@@ -3819,6 +3819,12 @@ packages:
     engines: {node: '>=8'}
     hasBin: true
 
+  winston-daily-rotate-file@5.0.0:
+    resolution: {integrity: sha512-JDjiXXkM5qvwY06733vf09I2wnMXpZEhxEVOSPenZMii+g7pcDcTBt2MRugnoi8BwVSuCT2jfRXBUy+n1Zz/Yw==}
+    engines: {node: '>=8'}
+    peerDependencies:
+      winston: ^3
+
   winston-transport@4.9.0:
     resolution: {integrity: sha512-8drMJ4rkgaPo1Me4zD/3WLfI/zPdA9o2IipKODunnGDcuqbHwjsbB79ylv04LCGGzU0xQ6vTznOMpQGaLhhm6A==}
     engines: {node: '>= 12.0.0'}
@@ -4478,11 +4484,6 @@ snapshots:
     optionalDependencies:
       '@nestjs/platform-express': 11.1.28(@nestjs/common@11.1.28(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@10.2.2))(@nestjs/core@11.1.28)(supports-color@10.2.2)
 
-  '@nestjs/mapped-types@2.1.1(@nestjs/common@11.1.28(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@10.2.2))(reflect-metadata@0.2.2)':
-    dependencies:
-      '@nestjs/common': 11.1.28(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@10.2.2)
-      reflect-metadata: 0.2.2
-
   '@nestjs/platform-express@11.1.28(@nestjs/common@11.1.28(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@10.2.2))(@nestjs/core@11.1.28)(supports-color@10.2.2)':
     dependencies:
       '@nestjs/common': 11.1.28(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@10.2.2)
@@ -4879,7 +4880,7 @@ snapshots:
       '@v-c/util': 1.1.0(vue@3.5.41(typescript@5.9.3))
       vue: 3.5.41(typescript@5.9.3)
 
-  '@v-c/picker@1.3.2(dayjs@1.11.21)(vue@3.5.41(typescript@5.9.3))':
+  '@v-c/picker@1.3.2(dayjs@1.11.21)(moment@2.30.1)(vue@3.5.41(typescript@5.9.3))':
     dependencies:
       '@v-c/overflow': 1.1.1(vue@3.5.41(typescript@5.9.3))
       '@v-c/resize-observer': 1.1.3(vue@3.5.41(typescript@5.9.3))
@@ -4888,6 +4889,7 @@ snapshots:
       vue: 3.5.41(typescript@5.9.3)
     optionalDependencies:
       dayjs: 1.11.21
+      moment: 2.30.1
 
   '@v-c/portal@1.0.8(vue@3.5.41(typescript@5.9.3))':
     dependencies:
@@ -5549,7 +5551,7 @@ snapshots:
 
   ansis@4.3.1: {}
 
-  antdv-next@1.4.6(vue@3.5.41(typescript@5.9.3)):
+  antdv-next@1.4.6(moment@2.30.1)(vue@3.5.41(typescript@5.9.3)):
     dependencies:
       '@ant-design/colors': 8.0.1
       '@ant-design/fast-color': 3.0.1
@@ -5571,7 +5573,7 @@ snapshots:
       '@v-c/mutate-observer': 1.0.2(vue@3.5.41(typescript@5.9.3))
       '@v-c/notification': 2.0.2(vue@3.5.41(typescript@5.9.3))
       '@v-c/pagination': 1.1.0(vue@3.5.41(typescript@5.9.3))
-      '@v-c/picker': 1.3.2(dayjs@1.11.21)(vue@3.5.41(typescript@5.9.3))
+      '@v-c/picker': 1.3.2(dayjs@1.11.21)(moment@2.30.1)(vue@3.5.41(typescript@5.9.3))
       '@v-c/progress': 1.0.1(vue@3.5.41(typescript@5.9.3))
       '@v-c/qrcode': 1.0.1(vue@3.5.41(typescript@5.9.3))
       '@v-c/rate': 1.0.1(vue@3.5.41(typescript@5.9.3))
@@ -6052,6 +6054,10 @@ snapshots:
 
   fecha@4.2.3: {}
 
+  file-stream-rotator@0.6.1:
+    dependencies:
+      moment: 2.30.1
+
   file-type@21.3.4(supports-color@10.2.2):
     dependencies:
       '@tokenizer/inflate': 0.4.1(supports-color@10.2.2)
@@ -6424,6 +6430,8 @@ snapshots:
       pkg-types: 1.3.1
       ufo: 1.6.4
 
+  moment@2.30.1: {}
+
   mrmime@2.0.1: {}
 
   ms@2.1.3: {}
@@ -6465,6 +6473,8 @@ snapshots:
 
   object-assign@4.1.1:
     optional: true
+
+  object-hash@3.0.0: {}
 
   object-inspect@1.13.4:
     optional: true
@@ -7482,6 +7492,14 @@ snapshots:
     dependencies:
       siginfo: 2.0.0
       stackback: 0.0.2
+
+  winston-daily-rotate-file@5.0.0(winston@3.19.0):
+    dependencies:
+      file-stream-rotator: 0.6.1
+      object-hash: 3.0.0
+      triple-beam: 1.4.1
+      winston: 3.19.0
+      winston-transport: 4.9.0
 
   winston-transport@4.9.0:
     dependencies:

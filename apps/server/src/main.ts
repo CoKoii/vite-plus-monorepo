@@ -1,19 +1,26 @@
-import "reflect-metadata";
 import { NestFactory } from "@nestjs/core";
-import { FastifyAdapter } from "@nestjs/platform-fastify";
 import type { NestFastifyApplication } from "@nestjs/platform-fastify";
-import { utilities } from "nest-winston";
-import { WinstonModule } from "nest-winston";
-import { createLogger } from "winston";
-import * as winston from "winston";
+import { FastifyAdapter } from "@nestjs/platform-fastify";
+import { utilities, WinstonModule } from "nest-winston";
+import "reflect-metadata";
+import { createLogger, format, transports } from "winston";
+import "winston-daily-rotate-file";
 
-import { AppModule } from "./app.module.js";
+import { AppModule } from "./app.module.ts";
 
 async function bootstrap() {
   const instance = createLogger({
     transports: [
-      new winston.transports.Console({
-        format: winston.format.combine(winston.format.timestamp(), utilities.format.nestLike()),
+      new transports.Console({
+        level: "info",
+        format: format.combine(format.timestamp(), utilities.format.nestLike()),
+      }),
+      new transports.DailyRotateFile({
+        level: "warn",
+        dirname: "logs",
+        filename: "application-%DATE%.log",
+        datePattern: "YYYY-MM-DD-HH",
+        maxFiles: "14d",
       }),
     ],
   });

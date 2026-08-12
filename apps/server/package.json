@@ -11,12 +11,12 @@
     "@nestjs/common": "catalog:",
     "@nestjs/config": "catalog:",
     "@nestjs/core": "catalog:",
-    "@nestjs/mapped-types": "*",
     "@nestjs/platform-fastify": "catalog:",
     "joi": "catalog:",
     "nest-winston": "catalog:",
     "reflect-metadata": "catalog:",
-    "winston": "catalog:"
+    "winston": "catalog:",
+    "winston-daily-rotate-file": "catalog:"
   },
   "devDependencies": {
     "@nestjs/cli": "catalog:",

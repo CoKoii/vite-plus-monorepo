@@ -1,11 +1,10 @@
-import { Global, Logger, Module } from "@nestjs/common";
+import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
-import * as joi from "joi";
+import joi from "joi";
 
-import { UserModule } from "./user/user.module.js";
+import { UserModule } from "./user/user.module.ts";
 
 const envFilePath = [`.env.${process.env["NODE_ENV"] || "development"}`, ".env"];
-@Global()
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -18,7 +17,5 @@ const envFilePath = [`.env.${process.env["NODE_ENV"] || "development"}`, ".env"]
     UserModule,
   ],
   controllers: [],
-  providers: [Logger],
-  exports: [Logger],
 })
 export class AppModule {}

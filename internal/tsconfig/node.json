@@ -2,10 +2,12 @@
   "$schema": "https://json.schemastore.org/tsconfig",
   "extends": "./base.json",
   "compilerOptions": {
+    "allowImportingTsExtensions": true,
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "emitDecoratorMetadata": true,
     "noEmit": false,
-    "noEmitOnError": true
+    "noEmitOnError": true,
+    "rewriteRelativeImportExtensions": true
   }
 }
