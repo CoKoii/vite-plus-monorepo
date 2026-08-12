@@ -1,18 +1,24 @@
-import { Catch, HttpException, type ArgumentsHost, type ExceptionFilter } from "@nestjs/common";
+import {
+  Catch,
+  HttpException,
+  Logger,
+  type ArgumentsHost,
+  type ExceptionFilter,
+} from "@nestjs/common";
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
+  constructor(private logger: Logger) {}
   catch(exception: HttpException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     // 响应 请求对象
     const response = ctx.getResponse();
-    const request = ctx.getRequest();
     // http 状态码
     const status = exception.getStatus();
-    response.status(status).json({
+    this.logger.error(exception.message, exception.stack);
+    response.status(status).send({
       statusCode: status,
       timestamp: new Date().toISOString(),
-      path: request.url,
-      method: request.method,
+      message: exception.message || HttpException.name,
     });
   }
 }
