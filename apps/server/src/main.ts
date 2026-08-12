@@ -7,6 +7,7 @@ import { createLogger, format, transports } from "winston";
 import "winston-daily-rotate-file";
 
 import { AppModule } from "./app.module.ts";
+import { HttpExceptionFilter } from "./common/filters/http-exception.filter.ts";
 
 async function bootstrap() {
   const instance = createLogger({
@@ -27,6 +28,8 @@ async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter(), {
     logger: WinstonModule.createLogger({ instance }),
   });
+  app.setGlobalPrefix("api");
+  app.useGlobalFilters(new HttpExceptionFilter());
   await app.listen(3000);
 }
 void bootstrap();
