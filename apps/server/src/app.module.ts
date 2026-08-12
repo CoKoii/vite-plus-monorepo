@@ -2,7 +2,7 @@ import { Global, Logger, Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import * as joi from "joi";
 
-import { AppController } from "./app.controller.js";
+import { UserModule } from "./user/user.module.js";
 
 const envFilePath = [`.env.${process.env["NODE_ENV"] || "development"}`, ".env"];
 @Global()
@@ -15,8 +15,9 @@ const envFilePath = [`.env.${process.env["NODE_ENV"] || "development"}`, ".env"]
         NODE_ENV: joi.string().valid("development", "production").default("development"),
       }),
     }),
+    UserModule,
   ],
-  controllers: [AppController],
+  controllers: [],
   providers: [Logger],
   exports: [Logger],
 })

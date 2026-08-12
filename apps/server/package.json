@@ -11,6 +11,7 @@
     "@nestjs/common": "catalog:",
     "@nestjs/config": "catalog:",
     "@nestjs/core": "catalog:",
+    "@nestjs/mapped-types": "*",
     "@nestjs/platform-fastify": "catalog:",
     "joi": "catalog:",
     "nest-winston": "catalog:",
