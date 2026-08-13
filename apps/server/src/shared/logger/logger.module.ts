@@ -42,3 +42,17 @@ import "winston-daily-rotate-file";
   ],
 })
 export class LoggerModule {}
+
+// logs/
+// ├── application/
+// │   └── application-%DATE%.log
+// │
+// ├── access/
+// │   └── access-%DATE%.log
+// │
+// ├── audit/
+// │   └── audit-%DATE%.log
+// │
+// └── error/
+//     └── error-%DATE%.log
+// TODO 建议后续把日志文件按功能模块化存储，便于运维分析
