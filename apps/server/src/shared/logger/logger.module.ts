@@ -12,7 +12,7 @@ import "winston-daily-rotate-file";
       inject: [ConfigService],
       // 创建日志配置
       useFactory: (configService: ConfigService) => {
-        // 日志文件格式：JSON + 时间戳，便于日志聚合系统解析
+        // 日志文件格式：JSON + 时间戳
         const fileFormat = format.combine(format.timestamp(), format.json());
         // 创建按天轮转的文件通道
         const createFileTransport = (level: string, filename: string) =>
@@ -30,7 +30,11 @@ import "winston-daily-rotate-file";
             // 控制台：按 Nest 风格输出，便于开发调试
             new transports.Console({
               level: configService.getOrThrow<string>("LOG_LEVEL"),
-              format: format.combine(format.timestamp(), utilities.format.nestLike("server")),
+              format: format.combine(
+                format.timestamp(),
+                format.ms(),
+                utilities.format.nestLike("server"),
+              ),
             }),
             // 日志文件：按级别分文件存储，便于运维分析
             createFileTransport("warn", "application-%DATE%.log"),
