@@ -14,16 +14,14 @@ async function bootstrap() {
   // 基于 Fastify 创建应用，日志由 LoggerModule 统一配置
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
   // 使用 winston 作为全局日志，供过滤器等注入使用
-  const logger = app.get<LoggerService>(WINSTON_MODULE_NEST_PROVIDER);
-  app.useLogger(logger);
+  app.useLogger(app.get<LoggerService>(WINSTON_MODULE_NEST_PROVIDER));
   // 所有接口统一挂在 /api 前缀下
   app.setGlobalPrefix("api");
   // 注册全局异常过滤器：统一错误响应并记录日志
-  const httpAdapter = app.get(HttpAdapterHost);
-  app.useGlobalFilters(new HttpExceptionFilter(logger, httpAdapter));
+  app.useGlobalFilters(new HttpExceptionFilter(app.get(HttpAdapterHost)));
   // 从配置读取端口并启动服务
-  const configService = app.get(ConfigService);
-  const port = configService.getOrThrow<number>("PORT");
+  const port = app.get(ConfigService).getOrThrow<number>("PORT");
+  app.enableCors();
   await app.listen(port);
 }
 void bootstrap();

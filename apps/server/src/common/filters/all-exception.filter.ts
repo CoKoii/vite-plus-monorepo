@@ -2,20 +2,18 @@ import {
   Catch,
   HttpException,
   HttpStatus,
+  Logger,
   type ArgumentsHost,
   type ExceptionFilter,
-  type LoggerService,
 } from "@nestjs/common";
 import type { HttpAdapterHost } from "@nestjs/core";
 
 // 全局异常过滤器：统一错误响应格式并记录日志
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
-  constructor(
-    private readonly logger: LoggerService,
-    private readonly httpAdapterHost: HttpAdapterHost,
-  ) {}
-  catch(exception: HttpException, host: ArgumentsHost) {
+  private readonly logger = new Logger();
+  constructor(private readonly httpAdapterHost: HttpAdapterHost) {}
+  catch(exception: unknown, host: ArgumentsHost) {
     const { httpAdapter } = this.httpAdapterHost;
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
@@ -32,8 +30,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
       body: request.body,
       timestamp: new Date().toISOString(),
       ip: request.ip,
-      exception: exception["name"],
-      error: exception["response"] || "服务器异常",
     };
     this.logger.error("[toimc]", responseBody);
     httpAdapter.reply(response, responseBody, httpStatus);
