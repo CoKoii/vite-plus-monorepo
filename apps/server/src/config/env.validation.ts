@@ -11,6 +11,9 @@ export const envValidationSchema = joi.object({
   // 日志级别：debug | info | warn | error，缺省为 info
   LOG_LEVEL: joi.string().valid("debug", "info", "warn", "error").default("info"),
 
+  // 日志文件目录，缺省为 logs
+  LOG_DIR: joi.string().default("logs"),
+
   // 日志文件最大尺寸，超过自动滚动，缺省为 100m
   LOG_MAX_SIZE: joi.string().default("100m"),
 
