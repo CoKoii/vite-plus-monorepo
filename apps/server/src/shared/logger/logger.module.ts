@@ -19,7 +19,7 @@ import "winston-daily-rotate-file";
           new transports.DailyRotateFile({
             level,
             filename,
-            dirname: configService.getOrThrow<string>("LOG_DIR"),
+            dirname: "logs",
             datePattern: "YYYY-MM-DD",
             maxSize: configService.getOrThrow<string>("LOG_MAX_SIZE"),
             maxFiles: configService.getOrThrow<string>("LOG_MAX_FILES"),

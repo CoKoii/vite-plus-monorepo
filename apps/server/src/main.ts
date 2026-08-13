@@ -1,4 +1,4 @@
-import type { LoggerService } from "@nestjs/common";
+import { VersioningType, type LoggerService } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { HttpAdapterHost, NestFactory } from "@nestjs/core";
 import type { NestFastifyApplication } from "@nestjs/platform-fastify";
@@ -15,13 +15,18 @@ async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
   // 使用 winston 作为全局日志，供过滤器等注入使用
   app.useLogger(app.get<LoggerService>(WINSTON_MODULE_NEST_PROVIDER));
-  // 所有接口统一挂在 /api 前缀下
-  app.setGlobalPrefix("api");
+
   // 注册全局异常过滤器：统一错误响应并记录日志
   app.useGlobalFilters(new HttpExceptionFilter(app.get(HttpAdapterHost)));
-  // 从配置读取端口并启动服务
-  const port = app.get(ConfigService).getOrThrow<number>("PORT");
-  app.enableCors();
-  await app.listen(port);
+  // 跨域：CORS_ORIGIN 支持逗号分隔多源，* 表示全部（映射为 true 回显请求来源）
+  const configService = app.get(ConfigService);
+  const corsOrigin = configService.getOrThrow<string>("CORS_ORIGIN");
+  app.enableCors({ origin: corsOrigin === "*" ? true : corsOrigin.split(",") });
+  // 所有接口统一挂在 /api 前缀下
+  app.setGlobalPrefix("api");
+  // 接口版本化：URI 方式，缺省版本为 v1
+  app.enableVersioning({ type: VersioningType.URI, defaultVersion: "1" });
+  // 启动服务
+  await app.listen(configService.getOrThrow<number>("PORT"));
 }
 void bootstrap();
