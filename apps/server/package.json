@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "nest start --watch",
     "build": "nest build",
-    "preview": "NODE_ENV=production node dist/main.js",
+    "preview": "cross-env NODE_ENV=production node dist/main.js",
     "check": "tsc --noEmit"
   },
   "dependencies": {
@@ -21,6 +21,7 @@
   "devDependencies": {
     "@nestjs/cli": "catalog:",
     "@nestjs/schematics": "catalog:",
+    "cross-env": "catalog:",
     "typescript": "catalog:"
   }
 }

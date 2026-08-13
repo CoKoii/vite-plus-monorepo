@@ -1,18 +1,9 @@
 import { Module } from "@nestjs/common";
-import { ConfigModule } from "@nestjs/config";
-import joi from "joi";
 
-const envFilePath = [`.env.${process.env["NODE_ENV"] || "development"}`, ".env"];
+import { AppConfigModule } from "./config/config.module.ts";
+
 @Module({
-  imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      envFilePath,
-      validationSchema: joi.object({
-        NODE_ENV: joi.string().valid("development", "production").default("development"),
-      }),
-    }),
-  ],
+  imports: [AppConfigModule],
   controllers: [],
 })
 export class AppModule {}

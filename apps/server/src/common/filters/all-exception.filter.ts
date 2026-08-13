@@ -7,6 +7,8 @@ import {
   type LoggerService,
 } from "@nestjs/common";
 import type { HttpAdapterHost } from "@nestjs/core";
+
+// 全局异常过滤器：统一错误响应格式并记录日志
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
   constructor(
@@ -16,13 +18,13 @@ export class HttpExceptionFilter implements ExceptionFilter {
   catch(exception: HttpException, host: ArgumentsHost) {
     const { httpAdapter } = this.httpAdapterHost;
     const ctx = host.switchToHttp();
-    // 响应 请求对象
     const response = ctx.getResponse();
     const request = ctx.getRequest();
-    // http 状态码
+    // 已知业务异常取自身状态码，未知异常统一 500
     const httpStatus =
       exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
 
+    // 响应体附带请求上下文（header/query/body/ip），便于排查问题
     const responseBody = {
       headers: request.headers,
       query: request.query,
