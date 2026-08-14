@@ -11,7 +11,7 @@ export const envValidationSchema = joi.object({
   // 日志级别：debug | info | warn | error，缺省为 info
   LOG_LEVEL: joi.string().valid("debug", "info", "warn", "error").default("info"),
 
-  // 跨域：开发/测试默认允许全部来源，生产环境必须显式配置。
+  // 跨域请求的来源，缺省为 *，表示允许所有来源
   CORS_ORIGIN: joi.when("NODE_ENV", {
     is: "production",
     // oxlint-disable-next-line no-thenable
