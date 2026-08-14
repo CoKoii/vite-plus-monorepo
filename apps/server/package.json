@@ -3,8 +3,8 @@
   "type": "module",
   "scripts": {
     "dev": "nest start --watch",
-    "build": "nest build",
-    "preview": "cross-env NODE_ENV=production node dist/main.js",
+    "build": "vp pack",
+    "preview": "cross-env NODE_ENV=production node dist/main.mjs",
     "check": "tsc --noEmit"
   },
   "dependencies": {
@@ -23,6 +23,7 @@
     "@nestjs/cli": "catalog:",
     "@nestjs/schematics": "catalog:",
     "cross-env": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vite-plus": "catalog:"
   }
 }
