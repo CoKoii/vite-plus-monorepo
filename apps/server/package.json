@@ -16,8 +16,7 @@
     "joi": "catalog:",
     "nest-winston": "catalog:",
     "reflect-metadata": "catalog:",
-    "winston": "catalog:",
-    "winston-daily-rotate-file": "catalog:"
+    "winston": "catalog:"
   },
   "devDependencies": {
     "@nestjs/cli": "catalog:",

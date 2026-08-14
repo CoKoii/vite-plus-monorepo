@@ -11,12 +11,11 @@ export const envValidationSchema = joi.object({
   // 日志级别：debug | info | warn | error，缺省为 info
   LOG_LEVEL: joi.string().valid("debug", "info", "warn", "error").default("info"),
 
-  // 日志文件最大尺寸，超过自动滚动，缺省为 100m
-  LOG_MAX_SIZE: joi.string().default("100m"),
-
-  // 日志文件最大保留时间，缺省为 30d
-  LOG_MAX_FILES: joi.string().default("30d"),
-
-  // 跨域：允许的源，多个用逗号分隔，* 表示全部，缺省为 *
-  CORS_ORIGIN: joi.string().default("*"),
+  // 跨域：开发/测试默认允许全部来源，生产环境必须显式配置。
+  CORS_ORIGIN: joi.when("NODE_ENV", {
+    is: "production",
+    // oxlint-disable-next-line no-thenable
+    then: joi.string().trim().min(1).required(),
+    otherwise: joi.string().trim().default("*"),
+  }),
 });

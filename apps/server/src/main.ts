@@ -21,7 +21,9 @@ async function bootstrap() {
   // 跨域：CORS_ORIGIN 支持逗号分隔多源，* 表示全部（映射为 true 回显请求来源）
   const configService = app.get(ConfigService);
   const corsOrigin = configService.getOrThrow<string>("CORS_ORIGIN");
-  app.enableCors({ origin: corsOrigin === "*" ? true : corsOrigin.split(",") });
+  const corsOrigins =
+    corsOrigin === "*" ? true : corsOrigin.split(",").map((origin) => origin.trim());
+  app.enableCors({ origin: corsOrigins });
   // 所有接口统一挂在 /api 前缀下
   app.setGlobalPrefix("api");
   // 接口版本化：URI 方式，缺省版本为 v1

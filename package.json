@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "vp run -r --parallel --log labeled dev",
     "build": "vp run -r build",
-    "check": "vp run -r check && vp lint . --fix && vp fmt .",
+    "check": "vp run -r check && vp lint . && vp fmt . --check",
+    "fix": "vp lint . --fix && vp fmt . --write",
     "preview": "vp run -r --parallel preview"
   },
   "devDependencies": {
