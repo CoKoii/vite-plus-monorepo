@@ -18,4 +18,16 @@ export const envValidationSchema = joi.object({
     then: joi.string().trim().min(1).required(),
     otherwise: joi.string().trim().default("*"),
   }),
+
+  // Redis 主机地址，缺省为 localhost
+  REDIS_HOST: joi.string().default("localhost"),
+
+  // Redis 端口，缺省为 6379
+  REDIS_PORT: joi.number().default(6379),
+
+  // Redis 密码
+  REDIS_PASSWORD: joi.string().required(),
+
+  // Redis 数据库编号，缺省为 0
+  REDIS_DB: joi.number().integer().min(0).default(0),
 });

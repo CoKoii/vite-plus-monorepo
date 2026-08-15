@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 
 import { AppConfigModule } from "./config/config.module.ts";
+import { CacheModule } from "./shared/cache/cache.module.ts";
 import { LoggerModule } from "./shared/logger/logger.module.ts";
 
 @Module({
@@ -10,6 +11,9 @@ import { LoggerModule } from "./shared/logger/logger.module.ts";
 
     // 全局日志：winston 控制台 + 滚动文件
     LoggerModule,
+
+    // 全局缓存：Redis
+    CacheModule,
   ],
   controllers: [],
 })
