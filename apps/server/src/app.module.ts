@@ -1,8 +1,8 @@
 import { Module } from "@nestjs/common";
 
 import { AppConfigModule } from "./config/config.module.ts";
-import { CacheModule } from "./shared/cache/cache.module.ts";
-import { LoggerModule } from "./shared/logger/logger.module.ts";
+import { CacheModule } from "./infrastructure/cache/cache.module.ts";
+import { LoggerModule } from "./infrastructure/logger/logger.module.ts";
 
 @Module({
   imports: [
