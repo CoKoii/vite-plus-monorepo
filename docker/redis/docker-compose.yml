@@ -1,0 +1,38 @@
+name: vite-plus-monorepo-redis
+
+services:
+  redis:
+    image: redis:8-alpine
+    restart: unless-stopped
+
+    command:
+      - redis-server
+      - --requirepass
+      - ${REDIS_PASSWORD:?请配置 REDIS_PASSWORD}
+      - --appendonly
+      - "yes"
+      - --maxmemory
+      - 256mb
+      - --maxmemory-policy
+      - allkeys-lru
+
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+
+    volumes:
+      - redis-data:/data
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "--no-auth-warning", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  redis-data:

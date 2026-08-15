@@ -9,11 +9,15 @@
   },
   "dependencies": {
     "@fastify/cors": "catalog:",
+    "@keyv/redis": "catalog:",
+    "@nestjs/cache-manager": "catalog:",
     "@nestjs/common": "catalog:",
     "@nestjs/config": "catalog:",
     "@nestjs/core": "catalog:",
     "@nestjs/platform-fastify": "catalog:",
+    "cache-manager": "catalog:",
     "joi": "catalog:",
+    "keyv": "catalog:",
     "nest-winston": "catalog:",
     "reflect-metadata": "catalog:",
     "winston": "catalog:"
