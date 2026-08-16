@@ -30,4 +30,10 @@ export const envValidationSchema = joi.object({
 
   // Redis 数据库编号，缺省为 0
   REDIS_DB: joi.number().integer().min(0).default(0),
+
+  // 邮件 SMTP 配置（QQ 邮箱，SMTP_PASSWORD 使用授权码）
+  SMTP_HOST: joi.string().required(),
+  SMTP_PORT: joi.number().port().required(),
+  SMTP_USER: joi.string().required(),
+  SMTP_PASSWORD: joi.string().required(),
 });
