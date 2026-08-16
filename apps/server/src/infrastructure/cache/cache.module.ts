@@ -8,7 +8,6 @@ import { ConfigService } from "@nestjs/config";
     NestCacheModule.registerAsync({
       isGlobal: true,
       inject: [ConfigService],
-
       useFactory: (configService: ConfigService) => {
         const host = configService.getOrThrow<string>("REDIS_HOST");
         const port = configService.getOrThrow<number>("REDIS_PORT");
