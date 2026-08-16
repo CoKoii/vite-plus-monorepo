@@ -10,15 +10,18 @@
   "dependencies": {
     "@fastify/cors": "catalog:",
     "@keyv/redis": "catalog:",
+    "@nestjs-modules/mailer": "catalog:",
     "@nestjs/cache-manager": "catalog:",
     "@nestjs/common": "catalog:",
     "@nestjs/config": "catalog:",
     "@nestjs/core": "catalog:",
     "@nestjs/platform-fastify": "catalog:",
     "cache-manager": "catalog:",
+    "handlebars": "catalog:",
     "joi": "catalog:",
     "keyv": "catalog:",
     "nest-winston": "catalog:",
+    "nodemailer": "catalog:",
     "reflect-metadata": "catalog:",
     "winston": "catalog:"
   },
