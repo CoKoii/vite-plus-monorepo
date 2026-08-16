@@ -22,7 +22,7 @@ import { MailService } from "./mail.service.ts";
         },
 
         defaults: {
-          from: configService.getOrThrow<string>("SMTP_USER"),
+          from: configService.getOrThrow<string>("SMTP_FROM"),
         },
       }),
     }),

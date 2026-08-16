@@ -36,4 +36,5 @@ export const envValidationSchema = joi.object({
   SMTP_PORT: joi.number().port().required(),
   SMTP_USER: joi.string().required(),
   SMTP_PASSWORD: joi.string().required(),
+  SMTP_FROM: joi.string().required(),
 });
