@@ -1,7 +1,12 @@
 import Handlebars from "handlebars";
 
-// 独立 Handlebars 实例，避免污染全局注册表
-const handlebars = Handlebars.create();
+// 独立 Handlebars 实例，供各模板文件复用，避免污染全局注册表
+export const handlebars = Handlebars.create();
+
+// 通用行内样式，供各模板复用
+export const paragraphStyle =
+  "margin: 0 0 16px; font-size: 14px; line-height: 1.6; color: #374151;";
+export const noteStyle = "margin: 0 0 8px; font-size: 12px; color: #9ca3af;";
 
 // 可复用片段：{{> button label="..." url="..."}}
 handlebars.registerPartial(
@@ -16,7 +21,7 @@ handlebars.registerPartial(
 );
 
 // 公共布局：所有邮件共用页头页脚，{{{body}}} 插入模板正文
-const layout = handlebars.compile(`<!DOCTYPE html>
+export const layout = handlebars.compile(`<!DOCTYPE html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
@@ -49,26 +54,8 @@ const layout = handlebars.compile(`<!DOCTYPE html>
   </body>
 </html>`);
 
-interface VerificationCodeContext {
-  code: string;
-  loginUrl: string;
-}
-
-const verificationCodeTemplate =
-  handlebars.compile(`<p style="margin: 0 0 16px; font-size: 14px; line-height: 1.6; color: #374151;">
-  你好，
-</p>
-<p style="margin: 0 0 8px; font-size: 14px; line-height: 1.6; color: #374151;">
-  你的验证码是：
-</p>
-<p style="margin: 0 0 16px; font-size: 32px; font-weight: 700; letter-spacing: 6px; color: #111827; text-align: center;">
-  {{code}}
-</p>
-<p style="margin: 0 0 8px; font-size: 12px; color: #9ca3af;">
-  验证码 10 分钟内有效，请勿泄露给他人。
-</p>
-{{> button label="前往登录" url=loginUrl}}`);
-
-export function renderVerificationCode(context: VerificationCodeContext): string {
-  return layout(verificationCodeTemplate(context));
+// 把模板正文嵌入公共布局。layout 用 {{{body}}}（三花括号，不转义），
+// 因此必须把渲染结果作为 { body } 传入，而不是直接当上下文，否则正文为空。
+export function render(body: string): string {
+  return layout({ body });
 }

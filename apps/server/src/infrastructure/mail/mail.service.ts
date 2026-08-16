@@ -1,9 +1,8 @@
 import { MailerService } from "@nestjs-modules/mailer";
 import { Injectable } from "@nestjs/common";
 
-import { renderVerificationCode } from "./templates.ts";
+import { renderPasswordReset, renderVerificationCode, renderWelcome } from "./templates/index.ts";
 
-// 复用 MailerService 的返回类型，避免依赖未安装类型的 nodemailer 包
 type SentMessageInfo = Awaited<ReturnType<MailerService["sendMail"]>>;
 
 @Injectable()
@@ -15,6 +14,22 @@ export class MailService {
       to,
       subject: "【vite-plus-monorepo】验证码",
       html: renderVerificationCode({ code, loginUrl }),
+    });
+  }
+
+  sendWelcome(to: string, username: string, loginUrl: string): Promise<SentMessageInfo> {
+    return this.mailerService.sendMail({
+      to,
+      subject: "【vite-plus-monorepo】欢迎加入",
+      html: renderWelcome({ username, loginUrl }),
+    });
+  }
+
+  sendPasswordReset(to: string, resetUrl: string): Promise<SentMessageInfo> {
+    return this.mailerService.sendMail({
+      to,
+      subject: "【vite-plus-monorepo】重置密码",
+      html: renderPasswordReset({ resetUrl }),
     });
   }
 }
