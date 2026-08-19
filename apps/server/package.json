@@ -16,13 +16,16 @@
     "@nestjs/config": "catalog:",
     "@nestjs/core": "catalog:",
     "@nestjs/platform-fastify": "catalog:",
+    "@nestjs/typeorm": "catalog:",
     "cache-manager": "catalog:",
     "handlebars": "catalog:",
     "joi": "catalog:",
     "keyv": "catalog:",
     "nest-winston": "catalog:",
     "nodemailer": "catalog:",
+    "pg": "catalog:",
     "reflect-metadata": "catalog:",
+    "typeorm": "catalog:",
     "winston": "catalog:"
   },
   "devDependencies": {

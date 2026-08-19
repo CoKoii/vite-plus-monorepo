@@ -21,6 +21,7 @@ catalog:
   "@nestjs/mapped-types": ^2.1.1
   "@nestjs/platform-fastify": ^11.1.28
   "@nestjs/schematics": ^11.1.0
+  '@nestjs/typeorm': ^11.0.3
   "@types/node": ^24.0.0
   "@vitejs/plugin-vue": ^6.0.8
   antdv-next: ^1.4.6
@@ -32,8 +33,10 @@ catalog:
   keyv: ^5.6.0
   nest-winston: ^1.10.2
   nodemailer: ^9.0.5
+  pg: ^8.23.0
   pinia: ^4.0.2
   reflect-metadata: ^0.2.2
+  typeorm: ^1.1.0
   typescript: ^5.9.3
   vite: npm:@voidzero-dev/vite-plus-core@0.2.8
   vite-plugin-vue-devtools: ^8.2.1
