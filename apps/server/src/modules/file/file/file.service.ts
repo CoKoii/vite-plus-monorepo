@@ -1,11 +1,13 @@
-import { Injectable } from '@nestjs/common';
-import { CreateFileDto } from './dto/create-file.dto';
-import { UpdateFileDto } from './dto/update-file.dto';
+import { Injectable } from "@nestjs/common";
+
+import { CreateFileDto } from "./dto/create-file.dto";
+import { UpdateFileDto } from "./dto/update-file.dto";
 
 @Injectable()
 export class FileService {
   create(createFileDto: CreateFileDto) {
-    return 'This action adds a new file';
+    console.log("createFileDto", createFileDto);
+    return "This action adds a new file";
   }
 
   findAll() {
@@ -17,6 +19,7 @@ export class FileService {
   }
 
   update(id: number, updateFileDto: UpdateFileDto) {
+    console.log("updateFileDto", updateFileDto);
     return `This action updates a #${id} file`;
   }
 
