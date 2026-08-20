@@ -6,6 +6,7 @@ import { DatabaseModule } from "./infrastructure/database/database.module";
 import { LoggerModule } from "./infrastructure/logger/logger.module";
 import { MailModule } from "./infrastructure/mail/mail.module";
 import { UsersModule } from './modules/iam/users/users.module';
+import { FileModule } from './modules/file/file/file.module';
 
 @Module({
   imports: [
@@ -25,6 +26,8 @@ import { UsersModule } from './modules/iam/users/users.module';
     DatabaseModule,
 
     UsersModule,
+
+    FileModule,
   ],
   controllers: [],
 })
