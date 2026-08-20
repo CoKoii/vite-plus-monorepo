@@ -1,7 +1,7 @@
 import { MailerService } from "@nestjs-modules/mailer";
 import { Injectable } from "@nestjs/common";
 
-import { renderPasswordReset, renderVerificationCode, renderWelcome } from "./templates/index.ts";
+import { renderPasswordReset, renderVerificationCode, renderWelcome } from "./templates";
 
 type SentMessageInfo = Awaited<ReturnType<MailerService["sendMail"]>>;
 

@@ -1,10 +1,11 @@
 import { Module } from "@nestjs/common";
 
-import { AppConfigModule } from "./config/config.module.ts";
-import { CacheModule } from "./infrastructure/cache/cache.module.ts";
-import { DatabaseModule } from "./infrastructure/database/database.module.ts";
-import { LoggerModule } from "./infrastructure/logger/logger.module.ts";
-import { MailModule } from "./infrastructure/mail/mail.module.ts";
+import { AppConfigModule } from "./config/config.module";
+import { CacheModule } from "./infrastructure/cache/cache.module";
+import { DatabaseModule } from "./infrastructure/database/database.module";
+import { LoggerModule } from "./infrastructure/logger/logger.module";
+import { MailModule } from "./infrastructure/mail/mail.module";
+import { UsersModule } from './modules/iam/users/users.module';
 
 @Module({
   imports: [
@@ -22,6 +23,8 @@ import { MailModule } from "./infrastructure/mail/mail.module.ts";
 
     // 数据库：PostgreSQL
     DatabaseModule,
+
+    UsersModule,
   ],
   controllers: [],
 })

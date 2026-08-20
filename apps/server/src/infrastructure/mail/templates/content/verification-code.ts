@@ -1,4 +1,4 @@
-import { handlebars, noteStyle, paragraphStyle, render } from "../layout/index.ts";
+import { handlebars, noteStyle, paragraphStyle, render } from "../layout";
 
 interface VerificationCodeContext {
   code: string;

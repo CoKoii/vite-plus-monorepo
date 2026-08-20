@@ -1,10 +1,10 @@
 {
   "name": "@vite-plus-monorepo/server",
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
     "dev": "nest start --watch",
-    "build": "vp pack",
-    "preview": "cross-env NODE_ENV=production node dist/main.mjs",
+    "build": "nest build",
+    "preview": "cross-env NODE_ENV=production node dist/main.js",
     "check": "tsc --noEmit"
   },
   "dependencies": {
@@ -15,6 +15,7 @@
     "@nestjs/common": "catalog:",
     "@nestjs/config": "catalog:",
     "@nestjs/core": "catalog:",
+    "@nestjs/mapped-types": "*",
     "@nestjs/platform-fastify": "catalog:",
     "@nestjs/typeorm": "catalog:",
     "cache-manager": "catalog:",
@@ -32,7 +33,6 @@
     "@nestjs/cli": "catalog:",
     "@nestjs/schematics": "catalog:",
     "cross-env": "catalog:",
-    "typescript": "catalog:",
-    "vite-plus": "catalog:"
+    "typescript": "catalog:"
   }
 }

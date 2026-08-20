@@ -1,3 +1,3 @@
-export { renderPasswordReset } from "./content/password-reset.ts";
-export { renderVerificationCode } from "./content/verification-code.ts";
-export { renderWelcome } from "./content/welcome.ts";
+export { renderPasswordReset } from "./content/password-reset";
+export { renderVerificationCode } from "./content/verification-code";
+export { renderWelcome } from "./content/welcome";

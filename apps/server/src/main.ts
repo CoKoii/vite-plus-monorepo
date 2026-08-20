@@ -6,8 +6,8 @@ import { FastifyAdapter } from "@nestjs/platform-fastify";
 import { WINSTON_MODULE_NEST_PROVIDER } from "nest-winston";
 import "reflect-metadata";
 
-import { AppModule } from "./app.module.ts";
-import { HttpExceptionFilter } from "./common/filters/all-exception.filter.ts";
+import { AppModule } from "./app.module";
+import { HttpExceptionFilter } from "./common/filters/all-exception.filter";
 
 // 应用启动入口：注册全局中间件并监听端口
 async function bootstrap() {

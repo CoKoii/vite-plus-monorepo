@@ -1,4 +1,4 @@
-import { handlebars, paragraphStyle, render } from "../layout/index.ts";
+import { handlebars, paragraphStyle, render } from "../layout";
 
 interface PasswordResetContext {
   resetUrl: string;
