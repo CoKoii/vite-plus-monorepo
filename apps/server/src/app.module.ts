@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 
 import { AppConfigModule } from "./config/config.module.ts";
 import { CacheModule } from "./infrastructure/cache/cache.module.ts";
+import { DatabaseModule } from "./infrastructure/database/database.module.ts";
 import { LoggerModule } from "./infrastructure/logger/logger.module.ts";
 import { MailModule } from "./infrastructure/mail/mail.module.ts";
 
@@ -18,6 +19,9 @@ import { MailModule } from "./infrastructure/mail/mail.module.ts";
 
     // 邮件：SMTP（QQ 邮箱）
     MailModule,
+
+    // 数据库：PostgreSQL
+    DatabaseModule,
   ],
   controllers: [],
 })
