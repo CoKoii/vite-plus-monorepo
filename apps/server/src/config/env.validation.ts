@@ -18,6 +18,7 @@ export const envValidationSchema = joi.object({
   DB_USERNAME: joi.string().required(),
   DB_PASSWORD: joi.string().required(),
   DB_DATABASE: joi.string().required(),
+  DB_POOL_MAX: joi.number().integer().min(1).required(),
 
   // Redis
   REDIS_HOST: joi.string().default("localhost"),

@@ -11,6 +11,6 @@ export class User {
   @Column({ comment: "密码" })
   password!: string;
 
-  @Column({ comment: "状态" })
+  @Column({ comment: "状态", default: 1 })
   status!: number;
 }

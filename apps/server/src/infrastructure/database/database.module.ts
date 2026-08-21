@@ -18,6 +18,9 @@ import { TypeOrmModule } from "@nestjs/typeorm";
         synchronize: configService.get("NODE_ENV") === "development",
         migrationsRun: false,
         logging: configService.get("NODE_ENV") === "development",
+        extra: {
+          max: configService.getOrThrow<number>("DB_POOL_MAX"),
+        },
       }),
     }),
   ],
