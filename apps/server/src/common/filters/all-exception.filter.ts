@@ -30,6 +30,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       body: request.body,
       timestamp: new Date().toISOString(),
       ip: request.ip,
+      requestId: request.id,
     };
     this.logger.error("[toimc]", responseBody);
     httpAdapter.reply(response, responseBody, httpStatus);
