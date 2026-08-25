@@ -21,18 +21,22 @@ export class HttpExceptionFilter implements ExceptionFilter {
     // 已知业务异常取自身状态码，未知异常统一 500
     const httpStatus =
       exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
-
-    // 响应体附带请求上下文（header/query/body/ip），便于排查问题
     const responseBody = {
+      requestId: request.id,
+      message:
+        exception instanceof HttpException ? exception.getResponse() : "Internal server error",
+    };
+
+    const loggerResponseBody = {
       headers: request.headers,
       query: request.query,
       params: request.params,
       body: request.body,
       timestamp: new Date().toISOString(),
       ip: request.ip,
-      requestId: request.id,
+      ...responseBody,
     };
-    this.logger.error("[toimc]", responseBody);
+    this.logger.error(loggerResponseBody);
     httpAdapter.reply(response, responseBody, httpStatus);
   }
 }
