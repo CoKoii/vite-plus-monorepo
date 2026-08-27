@@ -7,7 +7,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from "nest-winston";
 import "reflect-metadata";
 
 import { AppModule } from "./app.module";
-import { HttpExceptionFilter } from "./common/filters/all-exception.filter";
+import { AllExceptionFilter } from "./common/filters/all-exception.filter";
 
 // 应用启动入口：注册全局中间件并监听端口
 async function bootstrap() {
@@ -17,7 +17,7 @@ async function bootstrap() {
   app.useLogger(app.get<LoggerService>(WINSTON_MODULE_NEST_PROVIDER));
 
   // 注册全局异常过滤器：统一错误响应并记录日志
-  app.useGlobalFilters(new HttpExceptionFilter(app.get(HttpAdapterHost)));
+  app.useGlobalFilters(new AllExceptionFilter(app.get(HttpAdapterHost)));
   // 跨域：CORS_ORIGIN 支持逗号分隔多源，* 表示全部（映射为 true 回显请求来源）
   const configService = app.get(ConfigService);
   const corsOrigin = configService.getOrThrow<string>("CORS_ORIGIN");
