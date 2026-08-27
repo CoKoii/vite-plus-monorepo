@@ -14,13 +14,14 @@ export class UsersService {
   ) {}
   async create(createUserDto: CreateUserDto) {
     const existingUser = await this.userRepository.findOne({
-      where: { account: createUserDto.account },
+      where: { email: createUserDto.email },
     });
     if (existingUser) {
       throw new HttpException("用户已存在", HttpStatus.CONFLICT);
     }
     const user = this.userRepository.create(createUserDto);
     await this.userRepository.save(user);
+    return user;
   }
 
   findAll() {

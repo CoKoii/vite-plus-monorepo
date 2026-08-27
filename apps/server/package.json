@@ -19,6 +19,8 @@
     "@nestjs/platform-fastify": "catalog:",
     "@nestjs/typeorm": "catalog:",
     "cache-manager": "catalog:",
+    "class-transformer": "catalog:",
+    "class-validator": "catalog:",
     "handlebars": "catalog:",
     "joi": "catalog:",
     "keyv": "catalog:",
@@ -26,6 +28,7 @@
     "nodemailer": "catalog:",
     "pg": "catalog:",
     "reflect-metadata": "catalog:",
+    "rxjs": "^7.8.2",
     "typeorm": "catalog:",
     "winston": "catalog:"
   },

@@ -1,12 +1,11 @@
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
-
-@Entity({ comment: "用户账号" })
+@Entity({ comment: "用户账户" })
 export class User {
   @PrimaryGeneratedColumn({ comment: "用户ID" })
   id!: number;
 
-  @Column({ comment: "账号", unique: true })
-  account!: string;
+  @Column({ comment: "邮箱", unique: true })
+  email!: string;
 
   @Column({ comment: "密码" })
   password!: string;
