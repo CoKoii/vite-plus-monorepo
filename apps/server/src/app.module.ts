@@ -8,6 +8,7 @@ import { MailModule } from "./infrastructure/mail/mail.module";
 import { UsersModule } from './modules/iam/users/users.module';
 import { FileModule } from './modules/file/file/file.module';
 import { ProfilesModule } from './modules/iam/profiles/profiles.module';
+import { AuthModule } from './modules/iam/auth/auth.module';
 
 @Module({
   imports: [
@@ -31,6 +32,8 @@ import { ProfilesModule } from './modules/iam/profiles/profiles.module';
     FileModule,
 
     ProfilesModule,
+
+    AuthModule,
   ],
   controllers: [],
 })
