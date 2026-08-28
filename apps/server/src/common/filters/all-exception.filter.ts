@@ -12,6 +12,24 @@ import type { HttpAdapterHost } from "@nestjs/core";
 @Catch()
 export class AllExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(AllExceptionFilter.name);
+  // 处理异常消息，返回友好的错误信息
+  private getExceptionMessage(exception: HttpException): string {
+    const response = exception.getResponse();
+    if (typeof response === "string") {
+      return response;
+    }
+    if (typeof response === "object" && response !== null) {
+      const message = (response as { message?: string | string[] }).message;
+      if (Array.isArray(message)) {
+        return message.join(", ");
+      }
+      if (typeof message === "string") {
+        return message;
+      }
+    }
+
+    return exception.message;
+  }
   constructor(private readonly httpAdapterHost: HttpAdapterHost) {}
   catch(exception: unknown, host: ArgumentsHost) {
     const { httpAdapter } = this.httpAdapterHost;
@@ -26,7 +44,10 @@ export class AllExceptionFilter implements ExceptionFilter {
     const responseBody = {
       code: httpStatus,
       requestId: request.id,
-      message: exception instanceof HttpException ? exception.message : "Internal server error",
+      message:
+        exception instanceof HttpException
+          ? this.getExceptionMessage(exception)
+          : "Internal server error",
     };
 
     // 构造日志响应体
