@@ -9,10 +9,11 @@ import { map, type Observable } from "rxjs";
 @Injectable()
 export class ResponseInterceptor<T> implements NestInterceptor<T, unknown> {
   intercept(context: ExecutionContext, next: CallHandler<T>): Observable<unknown> {
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<{ id?: string }>();
     return next.handle().pipe(
       map((data) => ({
-        requestId: request.id,
+        code: "SUCCESS",
+        requestId: request.id ?? null,
         data: data ?? null,
       })),
     );

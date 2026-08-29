@@ -5,10 +5,10 @@ import { CacheModule } from "./infrastructure/cache/cache.module";
 import { DatabaseModule } from "./infrastructure/database/database.module";
 import { LoggerModule } from "./infrastructure/logger/logger.module";
 import { MailModule } from "./infrastructure/mail/mail.module";
-import { UsersModule } from './modules/iam/users/users.module';
-import { FileModule } from './modules/file/file/file.module';
-import { ProfilesModule } from './modules/iam/profiles/profiles.module';
-import { AuthModule } from './modules/iam/auth/auth.module';
+import { UsersModule } from "./modules/iam/users/users.module";
+import { FileModule } from "./modules/file/file/file.module";
+import { ProfilesModule } from "./modules/iam/profiles/profiles.module";
+import { AuthModule } from "./modules/iam/auth/auth.module";
 
 @Module({
   imports: [
@@ -28,11 +28,8 @@ import { AuthModule } from './modules/iam/auth/auth.module';
     DatabaseModule,
 
     UsersModule,
-
     FileModule,
-
     ProfilesModule,
-
     AuthModule,
   ],
   controllers: [],

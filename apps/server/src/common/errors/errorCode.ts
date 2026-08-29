@@ -10,10 +10,10 @@ export enum ErrorCode {
   /** 请求参数校验失败 */
   VALIDATION_ERROR = "VALIDATION_ERROR",
 
-  /** 请求参数缺失 */
+  /** 请求参数缺失或格式错误 */
   INVALID_REQUEST = "INVALID_REQUEST",
 
-  /** 未认证，需要登录 */
+  /** 未认证，需要先登录 */
   UNAUTHORIZED = "UNAUTHORIZED",
 
   /** 没有权限执行该操作 */
@@ -25,11 +25,14 @@ export enum ErrorCode {
   /** 请求与当前资源状态冲突 */
   CONFLICT = "CONFLICT",
 
-  /** 请求过于频繁 */
+  /** 请求过于频繁，被限流 */
   TOO_MANY_REQUESTS = "TOO_MANY_REQUESTS",
 
   /** 服务器内部错误 */
   INTERNAL_ERROR = "INTERNAL_ERROR",
+
+  /** 未知错误（兜底） */
+  UNKNOWN_ERROR = "UNKNOWN_ERROR",
 
   // ==================== Auth ====================
 
@@ -51,6 +54,6 @@ export enum ErrorCode {
   /** Token 无效 */
   AUTH_TOKEN_INVALID = "AUTH_TOKEN_INVALID",
 
-  /** Token 已过期 */
+  /** Token 已过期，需重新登录 */
   AUTH_TOKEN_EXPIRED = "AUTH_TOKEN_EXPIRED",
 }
