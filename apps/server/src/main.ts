@@ -23,7 +23,12 @@ async function bootstrap() {
   app.useLogger(app.get<LoggerService>(WINSTON_MODULE_NEST_PROVIDER));
 
   // 全局参数校验
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+    }),
+  );
 
   // 全局异常过滤器
   app.useGlobalFilters(

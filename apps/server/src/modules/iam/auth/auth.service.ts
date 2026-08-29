@@ -1,12 +1,16 @@
 import { Cache, CACHE_MANAGER } from "@nestjs/cache-manager";
 import { Inject, Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
 
 import {
-  EmailInvalidException,
+  CaptchaInvalidException,
+  EmailAlreadyExistsException,
   MailSendFailedException,
   TooManyRequestsException,
 } from "../../../common/errors/business.exception";
 import { MailService } from "../../../infrastructure/mail/mail.service";
+import { User } from "../users/entities/user.entity";
 import { GenerateCaptchaDto } from "./dto/generate-captcha.dto";
 import { RegisterAuthDto } from "./dto/register-auth.dto";
 
@@ -16,6 +20,8 @@ export class AuthService {
     @Inject(CACHE_MANAGER)
     private readonly cache: Cache,
     private readonly mailService: MailService,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) {}
 
   /* 生成验证码 */
@@ -42,13 +48,27 @@ export class AuthService {
       throw new MailSendFailedException();
     }
 
-    return { message: "验证码已发送" };
+    return "验证码发送成功，请注意查收";
   }
 
   /* 用户注册 */
-  register(registerAuthDto: RegisterAuthDto) {
-    console.log(registerAuthDto);
-    throw new EmailInvalidException();
+  async register(registerAuthDto: RegisterAuthDto) {
+    // 校验验证码
+    const { email, captcha } = registerAuthDto;
+    const captchaKey = `captcha:register:${email}`;
+    const cachedCaptcha = await this.cache.get(captchaKey);
+    if (!cachedCaptcha || cachedCaptcha !== captcha) {
+      throw new CaptchaInvalidException();
+    }
+    const existingUser = await this.userRepository.findOne({
+      where: { email },
+    });
+    if (existingUser) {
+      throw new EmailAlreadyExistsException();
+    }
+    const user = this.userRepository.create(registerAuthDto);
+    await this.userRepository.save(user);
+    return "注册成功";
   }
 
   findAll() {

@@ -22,7 +22,12 @@ export class TooManyRequestsException extends BusinessException {
     super(ErrorCode.TOO_MANY_REQUESTS, message, HttpStatus.TOO_MANY_REQUESTS);
   }
 }
-
+/* 验证码错误 */
+export class CaptchaInvalidException extends BusinessException {
+  constructor(message = "验证码错误") {
+    super(ErrorCode.AUTH_CAPTCHA_INVALID, message, HttpStatus.BAD_REQUEST);
+  }
+}
 /* 邮件发送失败 */
 export class MailSendFailedException extends BusinessException {
   constructor(message = "验证码发送失败，请稍后重试") {
@@ -33,20 +38,6 @@ export class MailSendFailedException extends BusinessException {
 /* 邮箱已被注册 */
 export class EmailAlreadyExistsException extends BusinessException {
   constructor(message = "邮箱已被注册") {
-    super(ErrorCode.AUTH_EMAIL_ALREADY_EXISTS, message, HttpStatus.CONFLICT);
-  }
-}
-
-/* 邮箱格式不正确 */
-export class EmailInvalidException extends BusinessException {
-  constructor(message = "邮箱格式不正确") {
-    super(ErrorCode.AUTH_EMAIL_INVALID, message, HttpStatus.BAD_REQUEST);
-  }
-}
-
-/* 用户已存在 */
-export class UserAlreadyExistsException extends BusinessException {
-  constructor(message = "用户已存在") {
     super(ErrorCode.AUTH_EMAIL_ALREADY_EXISTS, message, HttpStatus.CONFLICT);
   }
 }

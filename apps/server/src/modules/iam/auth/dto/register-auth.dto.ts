@@ -1,7 +1,7 @@
 import { IsEmail, IsNotEmpty, MinLength } from "class-validator";
 
 export class RegisterAuthDto {
-  @IsEmail({}, { message: "邮箱格式不正确" })
+  @IsEmail({}, { message: "邮箱格式不正确66" })
   email!: string;
 
   @MinLength(8, { message: "密码长度不能少于 8 位" })
