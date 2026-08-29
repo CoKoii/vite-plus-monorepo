@@ -7,26 +7,30 @@ import { WINSTON_MODULE_NEST_PROVIDER } from "nest-winston";
 import "reflect-metadata";
 
 import { AppModule } from "./app.module";
-import { AllExceptionFilter } from "./common/filters/all-exception.filter";
+import {
+  BusinessExceptionFilter,
+  HttpExceptionFilter,
+  UnknownExceptionFilter,
+} from "./common/filters/exception-filters";
 import { ResponseInterceptor } from "./common/interceptors/response.interceptor";
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
   const configService = app.get(ConfigService);
+  const httpAdapterHost = app.get(HttpAdapterHost);
 
   // 使用 Winston 作为全局日志
   app.useLogger(app.get<LoggerService>(WINSTON_MODULE_NEST_PROVIDER));
 
   // 全局参数校验
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      transform: true,
-    }),
-  );
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
   // 全局异常过滤器
-  app.useGlobalFilters(new AllExceptionFilter(app.get(HttpAdapterHost)));
+  app.useGlobalFilters(
+    new UnknownExceptionFilter(httpAdapterHost),
+    new HttpExceptionFilter(httpAdapterHost),
+    new BusinessExceptionFilter(httpAdapterHost),
+  );
 
   // 全局响应拦截器
   app.useGlobalInterceptors(new ResponseInterceptor());
@@ -41,10 +45,7 @@ async function bootstrap() {
   app.setGlobalPrefix("api");
 
   // URI 版本控制，默认 v1
-  app.enableVersioning({
-    type: VersioningType.URI,
-    defaultVersion: "1",
-  });
+  app.enableVersioning({ type: VersioningType.URI, defaultVersion: "1" });
 
   const port = configService.getOrThrow<number>("PORT");
   await app.listen(port);

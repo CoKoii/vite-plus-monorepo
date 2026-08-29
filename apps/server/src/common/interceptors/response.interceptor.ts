@@ -6,6 +6,7 @@ import {
 } from "@nestjs/common";
 import { map, type Observable } from "rxjs";
 
+/* 统一成功响应格式 */
 @Injectable()
 export class ResponseInterceptor<T> implements NestInterceptor<T, unknown> {
   intercept(context: ExecutionContext, next: CallHandler<T>): Observable<unknown> {
