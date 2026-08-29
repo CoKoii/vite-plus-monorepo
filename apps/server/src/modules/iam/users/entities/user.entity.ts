@@ -7,7 +7,7 @@ export class User {
   @Column({ comment: "邮箱", unique: true })
   email!: string;
 
-  @Column({ comment: "密码" })
+  @Column({ comment: "密码", select: false })
   password!: string;
 
   @Column({ comment: "状态", default: 1 })
