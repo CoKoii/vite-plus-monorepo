@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Post } from "@nestjs/common";
 
 import { AuthService } from "./auth.service";
+import { GenerateCaptchaDto } from "./dto/generate-captcha.dto";
 import { RegisterAuthDto } from "./dto/register-auth.dto";
 
 @Controller("auth")
@@ -9,8 +10,8 @@ export class AuthController {
 
   /* 生成验证码 */
   @Post("captcha")
-  generateCaptcha() {
-    return this.authService.generateCaptcha();
+  generateCaptcha(@Body() generateCaptchaDto: GenerateCaptchaDto) {
+    return this.authService.generateCaptcha(generateCaptchaDto);
   }
 
   /* 用户注册 */

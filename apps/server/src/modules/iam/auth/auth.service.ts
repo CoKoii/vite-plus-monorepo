@@ -1,16 +1,13 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 
 import { ErrorCode } from "../../../common/errors/errorCode";
+import { GenerateCaptchaDto } from "./dto/generate-captcha.dto";
 import { RegisterAuthDto } from "./dto/register-auth.dto";
 
 @Injectable()
 export class AuthService {
-  generateCaptcha() {
-    // TODO: 实现验证码生成逻辑
-    throw new HttpException(
-      { code: ErrorCode.AUTH_EMAIL_INVALID, message: "邮箱格式不正确" },
-      HttpStatus.BAD_REQUEST,
-    );
+  generateCaptcha(generateCaptchaDto: GenerateCaptchaDto) {
+    return generateCaptchaDto;
   }
 
   register(registerAuthDto: RegisterAuthDto) {
