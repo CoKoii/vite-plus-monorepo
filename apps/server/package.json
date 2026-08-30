@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@fastify/cors": "catalog:",
+    "@fastify/static": "catalog:",
     "@keyv/redis": "catalog:",
     "@nestjs-modules/mailer": "catalog:",
     "@nestjs/cache-manager": "catalog:",
@@ -19,6 +20,7 @@
     "@nestjs/mapped-types": "*",
     "@nestjs/passport": "catalog:",
     "@nestjs/platform-fastify": "catalog:",
+    "@nestjs/throttler": "catalog:",
     "@nestjs/typeorm": "catalog:",
     "argon2": "catalog:",
     "cache-manager": "catalog:",

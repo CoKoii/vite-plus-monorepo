@@ -1,12 +1,10 @@
-import { Column, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinTable, ManyToMany } from "typeorm";
 
+import { BaseEntity } from "../../../../common/entities/base.entity";
 import { Permission } from "../../permissions/entities/permission.entity";
 
 @Entity({ comment: "角色" })
-export class Role {
-  @PrimaryGeneratedColumn({ comment: "角色ID" })
-  id!: number;
-
+export class Role extends BaseEntity {
   @Column({ comment: "角色名称", length: 50 })
   name!: string;
 

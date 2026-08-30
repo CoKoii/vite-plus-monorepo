@@ -5,7 +5,9 @@ import { CacheModule } from "./infrastructure/cache/cache.module";
 import { DatabaseModule } from "./infrastructure/database/database.module";
 import { LoggerModule } from "./infrastructure/logger/logger.module";
 import { MailModule } from "./infrastructure/mail/mail.module";
+import { AuditModule } from "./modules/audit/audit.module";
 import { AuthModule } from "./modules/iam/auth/auth.module";
+import { HealthModule } from "./modules/health/health.module";
 import { PermissionsModule } from "./modules/iam/permissions/permissions.module";
 import { ProfilesModule } from "./modules/iam/profiles/profiles.module";
 import { RolesModule } from "./modules/iam/roles/roles.module";
@@ -25,6 +27,8 @@ import { FileModule } from "./modules/file/file/file.module";
     FileModule,
     ProfilesModule,
     AuthModule,
+    HealthModule,
+    AuditModule,
   ],
 })
 export class AppModule {}

@@ -3,8 +3,10 @@ import { randomInt } from "node:crypto";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { Inject, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { InjectDataSource } from "@nestjs/typeorm";
 import * as argon2 from "argon2";
 import type { Cache } from "cache-manager";
+import { DataSource } from "typeorm";
 
 import {
   CaptchaInvalidException,
@@ -14,7 +16,8 @@ import {
   TooManyRequestsException,
 } from "../../../common/errors/business.exception";
 import { MailService } from "../../../infrastructure/mail/mail.service";
-import { ProfilesService } from "../profiles/profiles.service";
+import { Profile } from "../profiles/entities/profile.entity";
+import { User } from "../users/entities/user.entity";
 import { UsersService } from "../users/users.service";
 import { GenerateCaptchaDto } from "./dto/generate-captcha.dto";
 import { RegisterAuthDto } from "./dto/register-auth.dto";
@@ -29,7 +32,8 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly configService: ConfigService,
     private readonly tokenService: TokenService,
-    private readonly profilesService: ProfilesService,
+    @InjectDataSource()
+    private readonly dataSource: DataSource,
   ) {}
 
   /** 发送验证码到邮箱，60 秒冷却，5 分钟过期 */
@@ -56,7 +60,7 @@ export class AuthService {
     return "验证码发送成功，请注意查收";
   }
 
-  /** 注册账号并创建空资料 */
+  /** 注册账号并创建空资料，事务保证一致性 */
   async register(dto: RegisterAuthDto): Promise<TokenPair> {
     const { email, captcha, password } = dto;
 
@@ -68,8 +72,16 @@ export class AuthService {
     await this.cache.del(`captcha:code:${email}`);
 
     const hashed = await argon2.hash(password);
-    const user = await this.usersService.create(email, hashed);
-    await this.profilesService.create(user);
+
+    const user = await this.dataSource.transaction(async (tx) => {
+      const users = tx.getRepository(User);
+      const profiles = tx.getRepository(Profile);
+
+      const user = await users.save(users.create({ email, password: hashed }));
+      await profiles.save(profiles.create({ user }));
+      return user;
+    });
+
     return this.tokenService.generateTokenPair(user);
   }
 

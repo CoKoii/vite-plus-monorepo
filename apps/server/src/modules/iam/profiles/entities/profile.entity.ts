@@ -1,12 +1,10 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, OneToOne } from "typeorm";
 
+import { BaseEntity } from "../../../../common/entities/base.entity";
 import { User } from "../../users/entities/user.entity";
 
 @Entity({ comment: "用户资料" })
-export class Profile {
-  @PrimaryGeneratedColumn({ comment: "资料ID" })
-  id!: number;
-
+export class Profile extends BaseEntity {
   @OneToOne(() => User, { onDelete: "CASCADE" })
   @JoinColumn({ name: "user_id" })
   user!: User;

@@ -6,21 +6,18 @@ import { TypeOrmModule } from "@nestjs/typeorm";
   imports: [
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
-
-      useFactory: (configService: ConfigService) => ({
+      useFactory: (cs: ConfigService) => ({
         type: "postgres",
-        host: configService.getOrThrow<string>("DB_HOST"),
-        port: configService.getOrThrow<number>("DB_PORT"),
-        username: configService.getOrThrow<string>("DB_USERNAME"),
-        password: configService.getOrThrow<string>("DB_PASSWORD"),
-        database: configService.getOrThrow<string>("DB_DATABASE"),
+        host: cs.getOrThrow("DB_HOST"),
+        port: cs.getOrThrow<number>("DB_PORT"),
+        username: cs.getOrThrow("DB_USERNAME"),
+        password: cs.getOrThrow("DB_PASSWORD"),
+        database: cs.getOrThrow("DB_DATABASE"),
         autoLoadEntities: true,
-        synchronize: configService.get("NODE_ENV") === "development",
+        synchronize: cs.get("NODE_ENV") === "development",
         migrationsRun: false,
-        logging: configService.get("NODE_ENV") === "development",
-        extra: {
-          max: configService.getOrThrow<number>("DB_POOL_MAX"),
-        },
+        logging: cs.get("NODE_ENV") === "development",
+        extra: { max: cs.getOrThrow<number>("DB_POOL_MAX") },
       }),
     }),
   ],

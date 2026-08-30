@@ -1,12 +1,10 @@
-import { Column, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinTable, ManyToMany } from "typeorm";
 
+import { BaseEntity } from "../../../../common/entities/base.entity";
 import { Role } from "../../roles/entities/role.entity";
 
 @Entity({ comment: "用户账户" })
-export class User {
-  @PrimaryGeneratedColumn({ comment: "用户ID" })
-  id!: number;
-
+export class User extends BaseEntity {
   @Column({ comment: "邮箱", unique: true })
   email!: string;
 

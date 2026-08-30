@@ -10,6 +10,8 @@ import { UsersModule } from "../users/users.module";
 import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
+import { PermissionsGuard } from "./guards/permissions.guard";
+import { RolesGuard } from "./guards/roles.guard";
 import { JwtStrategy } from "./strategies/jwt.strategy";
 import { TokenService } from "./token.service";
 
@@ -32,6 +34,8 @@ import { TokenService } from "./token.service";
     TokenService,
     JwtStrategy,
     { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: RolesGuard },
+    { provide: APP_GUARD, useClass: PermissionsGuard },
   ],
   exports: [TokenService, JwtModule],
 })

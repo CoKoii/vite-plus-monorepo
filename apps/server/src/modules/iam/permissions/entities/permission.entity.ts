@@ -1,10 +1,9 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity } from "typeorm";
+
+import { BaseEntity } from "../../../../common/entities/base.entity";
 
 @Entity({ comment: "权限" })
-export class Permission {
-  @PrimaryGeneratedColumn({ comment: "权限ID" })
-  id!: number;
-
+export class Permission extends BaseEntity {
   @Column({ comment: "权限名称", length: 50 })
   name!: string;
 
