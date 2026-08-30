@@ -1,37 +1,43 @@
-import { Body, Controller, Delete, Get, Param, Post } from "@nestjs/common";
+import { Body, Controller, Post } from "@nestjs/common";
 
 import { AuthService } from "./auth.service";
+import { Public } from "./decorators/public.decorator";
 import { GenerateCaptchaDto } from "./dto/generate-captcha.dto";
+import { LoginAuthDto } from "./dto/login-auth.dto";
+import { RefreshAuthDto } from "./dto/refresh-auth.dto";
 import { RegisterAuthDto } from "./dto/register-auth.dto";
 
 @Controller("auth")
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  /* 生成验证码 */
-  @Post("captcha")
-  generateCaptcha(@Body() generateCaptchaDto: GenerateCaptchaDto) {
-    return this.authService.generateCaptcha(generateCaptchaDto);
+  /** 发送邮箱验证码 */
+  @Public() @Post("captcha")
+  generateCaptcha(@Body() dto: GenerateCaptchaDto) {
+    return this.authService.generateCaptcha(dto);
   }
 
-  /* 用户注册 */
-  @Post("register")
-  register(@Body() registerAuthDto: RegisterAuthDto) {
-    return this.authService.register(registerAuthDto);
+  /** 注册账号并自动返回 token */
+  @Public() @Post("register")
+  register(@Body() dto: RegisterAuthDto) {
+    return this.authService.register(dto);
   }
 
-  @Get()
-  findAll() {
-    return this.authService.findAll();
+  /** 邮箱密码登录 */
+  @Public() @Post("login")
+  login(@Body() dto: LoginAuthDto) {
+    return this.authService.login(dto.email, dto.password);
   }
 
-  @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.authService.findOne(+id);
+  /** 刷新 token */
+  @Public() @Post("refresh")
+  refresh(@Body() dto: RefreshAuthDto) {
+    return this.authService.refresh(dto.refreshToken);
   }
 
-  @Delete(":id")
-  remove(@Param("id") id: string) {
-    return this.authService.remove(+id);
+  /** 退出登录 */
+  @Post("logout")
+  logout(@Body() dto: RefreshAuthDto) {
+    return this.authService.logout(dto.refreshToken);
   }
 }

@@ -1,34 +1,24 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { ProfilesService } from './profiles.service';
-import { CreateProfileDto } from './dto/create-profile.dto';
-import { UpdateProfileDto } from './dto/update-profile.dto';
+import { Body, Controller, Get, Patch } from "@nestjs/common";
 
-@Controller('profiles')
+import { CurrentUser } from "../auth/decorators/current-user.decorator";
+import type { User } from "../users/entities/user.entity";
+import { UpdateProfileDto } from "./dto/update-profile.dto";
+import { Profile } from "./entities/profile.entity";
+import { ProfilesService } from "./profiles.service";
+
+@Controller("profiles")
 export class ProfilesController {
   constructor(private readonly profilesService: ProfilesService) {}
 
-  @Post()
-  create(@Body() createProfileDto: CreateProfileDto) {
-    return this.profilesService.create(createProfileDto);
+  /** 获取当前用户资料 */
+  @Get("me")
+  getMyProfile(@CurrentUser() user: User): Promise<Profile | null> {
+    return this.profilesService.findMyProfile(user.id);
   }
 
-  @Get()
-  findAll() {
-    return this.profilesService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.profilesService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProfileDto: UpdateProfileDto) {
-    return this.profilesService.update(+id, updateProfileDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.profilesService.remove(+id);
+  /** 更新当前用户资料 */
+  @Patch("me")
+  updateMyProfile(@CurrentUser() user: User, @Body() dto: UpdateProfileDto): Promise<Profile> {
+    return this.profilesService.updateMyProfile(user.id, dto);
   }
 }

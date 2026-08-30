@@ -15,7 +15,9 @@
     "@nestjs/common": "catalog:",
     "@nestjs/config": "catalog:",
     "@nestjs/core": "catalog:",
+    "@nestjs/jwt": "catalog:",
     "@nestjs/mapped-types": "*",
+    "@nestjs/passport": "catalog:",
     "@nestjs/platform-fastify": "catalog:",
     "@nestjs/typeorm": "catalog:",
     "argon2": "catalog:",
@@ -27,6 +29,8 @@
     "keyv": "catalog:",
     "nest-winston": "catalog:",
     "nodemailer": "catalog:",
+    "passport": "catalog:",
+    "passport-jwt": "catalog:",
     "pg": "catalog:",
     "reflect-metadata": "catalog:",
     "rxjs": "^7.8.2",
@@ -36,6 +40,7 @@
   "devDependencies": {
     "@nestjs/cli": "catalog:",
     "@nestjs/schematics": "catalog:",
+    "@types/passport-jwt": "catalog:",
     "cross-env": "catalog:",
     "typescript": "catalog:"
   }

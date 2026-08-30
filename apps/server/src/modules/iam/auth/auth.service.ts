@@ -1,22 +1,24 @@
 import { randomInt } from "node:crypto";
 
-import { Cache, CACHE_MANAGER } from "@nestjs/cache-manager";
+import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { Inject, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { InjectRepository } from "@nestjs/typeorm";
 import * as argon2 from "argon2";
-import { Repository } from "typeorm";
+import type { Cache } from "cache-manager";
 
 import {
   CaptchaInvalidException,
   EmailAlreadyExistsException,
+  InvalidCredentialsException,
   MailSendFailedException,
   TooManyRequestsException,
 } from "../../../common/errors/business.exception";
 import { MailService } from "../../../infrastructure/mail/mail.service";
-import { User } from "../users/entities/user.entity";
+import { ProfilesService } from "../profiles/profiles.service";
+import { UsersService } from "../users/users.service";
 import { GenerateCaptchaDto } from "./dto/generate-captcha.dto";
 import { RegisterAuthDto } from "./dto/register-auth.dto";
+import { TokenService, type TokenPair } from "./token.service";
 
 @Injectable()
 export class AuthService {
@@ -24,81 +26,72 @@ export class AuthService {
     @Inject(CACHE_MANAGER)
     private readonly cache: Cache,
     private readonly mailService: MailService,
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    private readonly usersService: UsersService,
     private readonly configService: ConfigService,
+    private readonly tokenService: TokenService,
+    private readonly profilesService: ProfilesService,
   ) {}
 
-  /* 生成验证码 */
-  async generateCaptcha(generateCaptchaDto: GenerateCaptchaDto) {
-    const { email } = generateCaptchaDto;
-    const captchaKey = `captcha:register:${email}`;
-    const cooldownKey = `captcha:register:cooldown:${email}`;
-    const cooldown = await this.cache.get(cooldownKey);
-    if (cooldown) {
-      throw new TooManyRequestsException();
-    }
+  /** 发送验证码到邮箱，60 秒冷却，5 分钟过期 */
+  async generateCaptcha(dto: GenerateCaptchaDto) {
+    const { email } = dto;
+    const cooldown = await this.cache.get(`captcha:cooldown:${email}`);
+    if (cooldown) throw new TooManyRequestsException();
+
     const code = randomInt(100000, 1000000).toString();
-    // 保存验证码，5分钟后自动过期
-    await this.cache.set(captchaKey, code, 5 * 60 * 1000);
-    // 设置60秒发送冷却
-    await this.cache.set(cooldownKey, true, 60 * 1000);
-    // 发送邮件
+    await this.cache.set(`captcha:code:${email}`, code, 5 * 60 * 1000);
+    await this.cache.set(`captcha:cooldown:${email}`, true, 60 * 1000);
+
     try {
       await this.mailService.sendVerificationCode(
         email,
         code,
-        this.configService.getOrThrow<string>("LOGIN_URL"),
+        this.configService.getOrThrow("LOGIN_URL"),
       );
     } catch {
-      // 邮件发送失败，清理已设置的缓存
-      await this.cache.del(captchaKey);
-      await this.cache.del(cooldownKey);
+      await this.cache.del(`captcha:code:${email}`);
+      await this.cache.del(`captcha:cooldown:${email}`);
       throw new MailSendFailedException();
     }
-
     return "验证码发送成功，请注意查收";
   }
 
-  /* 用户注册 */
-  async register(registerAuthDto: RegisterAuthDto) {
-    const { email, captcha, password } = registerAuthDto;
-    const captchaKey = `captcha:register:${email}`;
+  /** 注册账号并创建空资料 */
+  async register(dto: RegisterAuthDto): Promise<TokenPair> {
+    const { email, captcha, password } = dto;
 
-    // 先检查邮箱是否已被注册
-    const existingUser = await this.userRepository.findOne({
-      where: { email },
-    });
-    if (existingUser) {
-      throw new EmailAlreadyExistsException();
-    }
+    const existing = await this.usersService.findByEmail(email);
+    if (existing) throw new EmailAlreadyExistsException();
 
-    // 检查验证码是否正确
-    const cachedCaptcha = await this.cache.get(captchaKey);
-    if (!cachedCaptcha || cachedCaptcha !== captcha) {
-      throw new CaptchaInvalidException();
-    }
-    await this.cache.del(captchaKey);
+    const cached = await this.cache.get<string>(`captcha:code:${email}`);
+    if (!cached || cached !== captcha) throw new CaptchaInvalidException();
+    await this.cache.del(`captcha:code:${email}`);
 
-    // 创建新用户
-    const hashedPassword = await argon2.hash(password);
-    const user = this.userRepository.create({
-      email,
-      password: hashedPassword,
-    });
-    await this.userRepository.save(user);
-    return "注册成功";
+    const hashed = await argon2.hash(password);
+    const user = await this.usersService.create(email, hashed);
+    await this.profilesService.create(user);
+    return this.tokenService.generateTokenPair(user);
   }
 
-  findAll() {
-    return `This action returns all auth`;
+  /** 邮箱密码登录 */
+  async login(email: string, password: string): Promise<TokenPair> {
+    const user = await this.usersService.findByEmailWithPassword(email);
+    if (!user) throw new InvalidCredentialsException();
+    if (!(await argon2.verify(user.password, password))) throw new InvalidCredentialsException();
+    if (user.status !== 1) throw new InvalidCredentialsException("账户已被禁用");
+    return this.tokenService.generateTokenPair(user);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
+  /** 刷新 token，旧 token 自动失效 */
+  async refresh(oldRefreshToken: string): Promise<TokenPair> {
+    const userId = await this.tokenService.resolveRefreshToken(oldRefreshToken);
+    const user = await this.usersService.findById(userId);
+    if (!user || user.status !== 1) throw new InvalidCredentialsException("账户不存在或已被禁用");
+    return this.tokenService.rotateRefreshToken(oldRefreshToken, user);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+  /** 退出登录 */
+  async logout(refreshToken: string): Promise<void> {
+    await this.tokenService.revokeRefreshToken(refreshToken);
   }
 }

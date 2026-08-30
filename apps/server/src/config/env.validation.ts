@@ -35,4 +35,9 @@ export const envValidationSchema = joi.object({
 
   // 前端地址
   LOGIN_URL: joi.string().uri().required(),
+
+  // JWT
+  JWT_SECRET: joi.string().min(32).required(),
+  JWT_ACCESS_EXPIRES: joi.string().default("15m"),
+  JWT_REFRESH_EXPIRES: joi.string().default("7d"),
 });

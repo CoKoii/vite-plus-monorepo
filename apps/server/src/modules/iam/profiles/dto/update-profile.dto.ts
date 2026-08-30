@@ -1,4 +1,18 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateProfileDto } from './create-profile.dto';
+import { IsOptional, IsString, MaxLength } from "class-validator";
 
-export class UpdateProfileDto extends PartialType(CreateProfileDto) {}
+export class UpdateProfileDto {
+  @IsString()
+  @MaxLength(50)
+  @IsOptional()
+  nickname?: string;
+
+  @IsString()
+  @MaxLength(500)
+  @IsOptional()
+  avatar?: string;
+
+  @IsString()
+  @MaxLength(500)
+  @IsOptional()
+  bio?: string;
+}
