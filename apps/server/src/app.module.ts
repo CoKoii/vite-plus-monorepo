@@ -15,7 +15,6 @@ import { PermissionsModule } from "./modules/iam/permissions/permissions.module"
 import { ProfilesModule } from "./modules/iam/profiles/profiles.module";
 import { RolesModule } from "./modules/iam/roles/roles.module";
 import { UsersModule } from "./modules/iam/users/users.module";
-import { FileModule } from "./modules/file/file/file.module";
 
 @Module({
   imports: [
@@ -28,7 +27,6 @@ import { FileModule } from "./modules/file/file/file.module";
     UsersModule,
     RolesModule,
     PermissionsModule,
-    FileModule,
     ProfilesModule,
     AuthModule,
     HealthModule,

@@ -18,6 +18,9 @@ import { MailService } from "./mail.service";
             user: configService.getOrThrow<string>("SMTP_USER"),
             pass: configService.getOrThrow<string>("SMTP_PASSWORD"),
           },
+          connectionTimeout: 5000,
+          greetingTimeout: 5000,
+          socketTimeout: 5000,
         },
         defaults: {
           from: configService.getOrThrow<string>("SMTP_FROM"),

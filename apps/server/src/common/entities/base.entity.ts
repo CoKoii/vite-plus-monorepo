@@ -12,5 +12,5 @@ export abstract class BaseEntity {
   updatedAt!: Date;
 
   @DeleteDateColumn({ comment: "软删除时间" })
-  deletedAt?: Date;
+  deletedAt!: Date | null;
 }

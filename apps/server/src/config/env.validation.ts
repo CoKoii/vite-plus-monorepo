@@ -7,7 +7,6 @@ export const envValidationSchema = joi.object({
   LOG_LEVEL: joi.string().valid("debug", "info", "warn", "error").default("info"),
   CORS_ORIGIN: joi.when("NODE_ENV", {
     is: "production",
-    // oxlint-disable-next-line no-thenable
     then: joi.string().trim().min(1).required(),
     otherwise: joi.string().trim().default("*"),
   }),

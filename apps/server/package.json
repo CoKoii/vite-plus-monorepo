@@ -8,7 +8,8 @@
     "check": "tsc --noEmit",
     "migration:generate": "typeorm-ts-node-commonjs migration:generate -d src/infrastructure/database/migration.config.ts",
     "migration:run": "typeorm-ts-node-commonjs migration:run -d src/infrastructure/database/migration.config.ts",
-    "migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/infrastructure/database/migration.config.ts"
+    "migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/infrastructure/database/migration.config.ts",
+    "migration:show": "typeorm-ts-node-commonjs migration:show -d src/infrastructure/database/migration.config.ts"
   },
   "dependencies": {
     "@fastify/cors": "catalog:",
@@ -30,6 +31,7 @@
     "cache-manager": "catalog:",
     "class-transformer": "catalog:",
     "class-validator": "catalog:",
+    "dotenv": "catalog:",
     "handlebars": "catalog:",
     "joi": "catalog:",
     "keyv": "catalog:",
@@ -48,6 +50,7 @@
     "@nestjs/schematics": "catalog:",
     "@types/passport-jwt": "catalog:",
     "cross-env": "catalog:",
+    "ts-node": "catalog:",
     "typescript": "catalog:"
   }
 }

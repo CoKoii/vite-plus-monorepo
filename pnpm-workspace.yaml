@@ -47,6 +47,7 @@ catalog:
   pg: ^8.23.0
   pinia: ^4.0.2
   reflect-metadata: ^0.2.2
+  ts-node: ^10.9.2
   typeorm: ^1.1.0
   typescript: ^5.9.3
   vite: npm:@voidzero-dev/vite-plus-core@0.2.8

@@ -1,5 +1,9 @@
-import { DataSource } from "typeorm";
 import { resolve } from "path";
+
+import { config } from "dotenv";
+import { DataSource } from "typeorm";
+
+config({ path: ".env" });
 
 export default new DataSource({
   type: "postgres",

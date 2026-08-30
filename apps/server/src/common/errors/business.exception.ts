@@ -41,6 +41,12 @@ export class InvalidCredentialsException extends BusinessException {
   }
 }
 
+export class AccountDisabledException extends BusinessException {
+  constructor(message = "账户已被禁用") {
+    super(ErrorCode.AUTH_ACCOUNT_DISABLED, message, HttpStatus.FORBIDDEN);
+  }
+}
+
 export class TokenInvalidException extends BusinessException {
   constructor(message = "Token 无效，请重新登录") {
     super(ErrorCode.AUTH_TOKEN_INVALID, message, HttpStatus.UNAUTHORIZED);

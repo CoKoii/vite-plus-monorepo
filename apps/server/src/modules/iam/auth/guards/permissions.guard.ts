@@ -19,9 +19,9 @@ export class PermissionsGuard {
     ]);
     if (!required) return true;
 
-    const { user } = context.switchToHttp().getRequest<{ user: { id: number } }>();
-    const ok = await this.authorizationService.hasPermissions(user.id, required);
-    if (!ok) throw new ForbiddenException("没有足够的权限");
-    return true;
+    const { user } = context.switchToHttp().getRequest<{ user?: { id: number } }>();
+    // 没有用户（如 @Public() 路由）但要求权限 → 拒绝
+    if (!user) throw new ForbiddenException("没有足够的权限");
+    return this.authorizationService.hasPermissions(user.id, required);
   }
 }

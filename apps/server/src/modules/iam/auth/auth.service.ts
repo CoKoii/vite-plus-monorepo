@@ -9,6 +9,7 @@ import type { Cache } from "cache-manager";
 import { DataSource } from "typeorm";
 
 import {
+  AccountDisabledException,
   CaptchaInvalidException,
   EmailAlreadyExistsException,
   InvalidCredentialsException,
@@ -90,7 +91,7 @@ export class AuthService {
     const user = await this.usersService.findByEmailWithPassword(email);
     if (!user) throw new InvalidCredentialsException();
     if (!(await argon2.verify(user.password, password))) throw new InvalidCredentialsException();
-    if (user.status !== 1) throw new InvalidCredentialsException("账户已被禁用");
+    if (user.status !== 1) throw new AccountDisabledException();
     return this.tokenService.generateTokenPair(user);
   }
 
@@ -98,7 +99,8 @@ export class AuthService {
   async refresh(oldRefreshToken: string): Promise<TokenPair> {
     const userId = await this.tokenService.resolveRefreshToken(oldRefreshToken);
     const user = await this.usersService.findById(userId);
-    if (!user || user.status !== 1) throw new InvalidCredentialsException("账户不存在或已被禁用");
+    if (!user) throw new InvalidCredentialsException("账户不存在");
+    if (user.status !== 1) throw new AccountDisabledException();
     return this.tokenService.rotateRefreshToken(oldRefreshToken, user);
   }
 
