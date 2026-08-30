@@ -32,4 +32,7 @@ export const envValidationSchema = joi.object({
   SMTP_USER: joi.string().required(),
   SMTP_PASSWORD: joi.string().required(),
   SMTP_FROM: joi.string().required(),
+
+  // 前端地址
+  LOGIN_URL: joi.string().uri().required(),
 });

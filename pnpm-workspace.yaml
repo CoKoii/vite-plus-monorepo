@@ -25,6 +25,7 @@ catalog:
   "@types/node": ^24.0.0
   "@vitejs/plugin-vue": ^6.0.8
   antdv-next: ^1.4.6
+  argon2: ^0.45.1
   cache-manager: ^7.2.9
   class-transformer: ^0.5.1
   class-validator: ^0.15.1
@@ -59,3 +60,6 @@ minimumReleaseAgeExclude:
   - "@voidzero-dev/vite-plus-win32-arm64-msvc@0.2.8"
   - "@voidzero-dev/vite-plus-win32-x64-msvc@0.2.8"
   - vite-plus@0.2.8
+
+allowBuilds:
+  argon2: true

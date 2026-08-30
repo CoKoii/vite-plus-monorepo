@@ -18,6 +18,7 @@
     "@nestjs/mapped-types": "*",
     "@nestjs/platform-fastify": "catalog:",
     "@nestjs/typeorm": "catalog:",
+    "argon2": "catalog:",
     "cache-manager": "catalog:",
     "class-transformer": "catalog:",
     "class-validator": "catalog:",
