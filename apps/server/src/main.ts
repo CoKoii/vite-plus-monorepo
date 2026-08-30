@@ -16,7 +16,6 @@ import {
   UnknownExceptionFilter,
 } from "./common/filters/exception-filters";
 import { ResponseInterceptor } from "./common/interceptors/response.interceptor";
-import { setupSwagger } from "./common/swagger";
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -43,9 +42,6 @@ async function bootstrap() {
 
   app.useGlobalInterceptors(new ResponseInterceptor());
 
-  if (configService.get("NODE_ENV") !== "production") {
-    setupSwagger(app);
-  }
 
   const corsOrigin = configService.getOrThrow<string>("CORS_ORIGIN");
   app.enableCors({

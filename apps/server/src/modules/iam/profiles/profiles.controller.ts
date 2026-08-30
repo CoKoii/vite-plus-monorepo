@@ -10,13 +10,11 @@ import { ProfilesService } from "./profiles.service";
 export class ProfilesController {
   constructor(private readonly profilesService: ProfilesService) {}
 
-  /** 获取当前用户资料 */
   @Get("me")
   getMyProfile(@CurrentUser() user: User): Promise<Profile | null> {
     return this.profilesService.findMyProfile(user.id);
   }
 
-  /** 更新当前用户资料 */
   @Patch("me")
   updateMyProfile(@CurrentUser() user: User, @Body() dto: UpdateProfileDto): Promise<Profile> {
     return this.profilesService.updateMyProfile(user.id, dto);

@@ -24,7 +24,6 @@
     "@nestjs/mapped-types": "*",
     "@nestjs/passport": "catalog:",
     "@nestjs/platform-fastify": "catalog:",
-    "@nestjs/swagger": "11.4.7",
     "@nestjs/throttler": "6.5.0",
     "@nestjs/typeorm": "catalog:",
     "argon2": "catalog:",

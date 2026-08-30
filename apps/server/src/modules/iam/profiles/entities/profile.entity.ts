@@ -17,4 +17,6 @@ export class Profile extends BaseEntity {
 
   @Column({ comment: "个人简介", length: 500, default: "" })
   bio!: string;
+
+  user_id!: number;
 }
