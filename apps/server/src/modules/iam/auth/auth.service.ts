@@ -48,7 +48,7 @@ export class AuthService {
       await this.mailService.sendVerificationCode(
         email,
         code,
-        this.configService.get<string>("LOGIN_URL")!,
+        this.configService.getOrThrow<string>("LOGIN_URL"),
       );
     } catch {
       // 邮件发送失败，清理已设置的缓存
@@ -62,20 +62,25 @@ export class AuthService {
 
   /* 用户注册 */
   async register(registerAuthDto: RegisterAuthDto) {
-    // 校验验证码
     const { email, captcha, password } = registerAuthDto;
     const captchaKey = `captcha:register:${email}`;
-    const cachedCaptcha = await this.cache.get(captchaKey);
-    if (!cachedCaptcha || cachedCaptcha !== captcha) {
-      throw new CaptchaInvalidException();
-    }
-    await this.cache.del(captchaKey);
+
+    // 先检查邮箱是否已被注册
     const existingUser = await this.userRepository.findOne({
       where: { email },
     });
     if (existingUser) {
       throw new EmailAlreadyExistsException();
     }
+
+    // 检查验证码是否正确
+    const cachedCaptcha = await this.cache.get(captchaKey);
+    if (!cachedCaptcha || cachedCaptcha !== captcha) {
+      throw new CaptchaInvalidException();
+    }
+    await this.cache.del(captchaKey);
+
+    // 创建新用户
     const hashedPassword = await argon2.hash(password);
     const user = this.userRepository.create({
       email,
