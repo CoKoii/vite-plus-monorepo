@@ -1,4 +1,4 @@
-import { Controller, Get } from "@nestjs/common";
+import { Controller, Get, HttpStatus, HttpException } from "@nestjs/common";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { Inject } from "@nestjs/common";
 import { InjectDataSource } from "@nestjs/typeorm";
@@ -16,13 +16,16 @@ export class HealthController {
     private readonly dataSource: DataSource,
   ) {}
 
-  @Public()
-  @Get()
+  @Public() @Get()
   async check() {
-    const db = await this.dataSource.query("SELECT 1 AS ok").then(() => true, () => false);
-    const redis = await this.cache.set("health:ping", "pong", 10000).then(() => true, () => false);
-    await this.cache.del("health:ping");
+    const [db, redis] = await Promise.all([
+      this.dataSource.query("SELECT 1").then(() => true, () => false),
+      this.cache.set("health:ping", "pong", 10000).then(() => true, () => false),
+    ]);
+    if (redis) await this.cache.del("health:ping");
 
-    return { status: db && redis ? "ok" : "degraded", db, redis, timestamp: new Date().toISOString() };
+    const ok = db && redis;
+    if (!ok) throw new HttpException({ status: "degraded", db, redis }, HttpStatus.SERVICE_UNAVAILABLE);
+    return { status: "ok", db, redis, timestamp: new Date().toISOString() };
   }
 }

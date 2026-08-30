@@ -2,20 +2,24 @@ import { type ExecutionContext, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 
 import { PERMISSIONS_KEY } from "../decorators/permissions.decorator";
+import { AuthorizationService } from "../authorization.service";
 
-/** 权限校验守卫，校验当前用户是否拥有 @Permissions() 指定的权限 */
+/** 权限校验守卫，通过 AuthorizationService 查库校验 */
 @Injectable()
 export class PermissionsGuard {
-  constructor(private readonly reflector: Reflector) {}
+  constructor(
+    private readonly reflector: Reflector,
+    private readonly authorizationService: AuthorizationService,
+  ) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const required = this.reflector.getAllAndOverride<string[]>(PERMISSIONS_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
     if (!required) return true;
 
-    const { user } = context.switchToHttp().getRequest<{ user: { permissions?: string[] } }>();
-    return required.every((perm) => user.permissions?.includes(perm));
+    const { user } = context.switchToHttp().getRequest<{ user: { id: number } }>();
+    return this.authorizationService.hasPermissions(user.id, required);
   }
 }

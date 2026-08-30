@@ -11,7 +11,7 @@ export class AuditService {
     private readonly auditRepository: Repository<AuditLog>,
   ) {}
 
-  log(params: { userId?: number; action: string; resource: string; resourceId?: number; ip?: string; detail?: Record<string, any> }) {
-    return this.auditRepository.save(this.auditRepository.create(params));
+  async log(params: { userId?: number; action: string; resource: string; resourceId?: number; ip?: string; detail?: Record<string, any> }) {
+    await this.auditRepository.save(this.auditRepository.create(params));
   }
 }

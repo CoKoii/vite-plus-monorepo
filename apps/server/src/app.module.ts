@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { ThrottlerModule } from "@nestjs/throttler";
 
 import { AppConfigModule } from "./config/config.module";
 import { CacheModule } from "./infrastructure/cache/cache.module";
@@ -16,6 +17,7 @@ import { FileModule } from "./modules/file/file/file.module";
 
 @Module({
   imports: [
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: 60 }]),
     AppConfigModule,
     LoggerModule,
     CacheModule,

@@ -20,7 +20,7 @@
     "@nestjs/mapped-types": "*",
     "@nestjs/passport": "catalog:",
     "@nestjs/platform-fastify": "catalog:",
-    "@nestjs/throttler": "catalog:",
+    "@nestjs/throttler": "6.5.0",
     "@nestjs/typeorm": "catalog:",
     "argon2": "catalog:",
     "cache-manager": "catalog:",
