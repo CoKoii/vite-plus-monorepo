@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { APP_INTERCEPTOR } from "@nestjs/core";
 import { ThrottlerModule } from "@nestjs/throttler";
 
 import { AppConfigModule } from "./config/config.module";
@@ -6,6 +7,7 @@ import { CacheModule } from "./infrastructure/cache/cache.module";
 import { DatabaseModule } from "./infrastructure/database/database.module";
 import { LoggerModule } from "./infrastructure/logger/logger.module";
 import { MailModule } from "./infrastructure/mail/mail.module";
+import { AuditInterceptor } from "./common/interceptors/audit.interceptor";
 import { AuditModule } from "./modules/audit/audit.module";
 import { AuthModule } from "./modules/iam/auth/auth.module";
 import { HealthModule } from "./modules/health/health.module";
@@ -31,6 +33,9 @@ import { FileModule } from "./modules/file/file/file.module";
     AuthModule,
     HealthModule,
     AuditModule,
+  ],
+  providers: [
+    { provide: APP_INTERCEPTOR, useClass: AuditInterceptor },
   ],
 })
 export class AppModule {}

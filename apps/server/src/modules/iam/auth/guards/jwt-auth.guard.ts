@@ -1,4 +1,4 @@
-import { type ExecutionContext, Injectable } from "@nestjs/common";
+import { type ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { AuthGuard } from "@nestjs/passport";
 
@@ -16,6 +16,15 @@ export class JwtAuthGuard extends AuthGuard("jwt") {
       context.getHandler(),
       context.getClass(),
     ]);
-    return isPublic ? true : super.canActivate(context);
+    if (isPublic) return true;
+    return super.canActivate(context);
+  }
+
+  /** JWT 校验失败时统一返回 401 */
+  override handleRequest(err: Error | null, user: any, _info: any) {
+    if (err || !user) {
+      throw err || new UnauthorizedException("请先登录");
+    }
+    return user;
   }
 }

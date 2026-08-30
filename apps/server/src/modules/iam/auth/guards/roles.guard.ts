@@ -1,4 +1,4 @@
-import { type ExecutionContext, Injectable } from "@nestjs/common";
+import { type ExecutionContext, ForbiddenException, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 
 import { ROLES_KEY } from "../decorators/roles.decorator";
@@ -20,6 +20,8 @@ export class RolesGuard {
     if (!required) return true;
 
     const { user } = context.switchToHttp().getRequest<{ user: { id: number } }>();
-    return this.authorizationService.hasRoles(user.id, required);
+    const ok = await this.authorizationService.hasRoles(user.id, required);
+    if (!ok) throw new ForbiddenException("没有足够的角色权限");
+    return true;
   }
 }

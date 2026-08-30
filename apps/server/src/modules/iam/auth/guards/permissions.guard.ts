@@ -1,4 +1,4 @@
-import { type ExecutionContext, Injectable } from "@nestjs/common";
+import { type ExecutionContext, ForbiddenException, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 
 import { PERMISSIONS_KEY } from "../decorators/permissions.decorator";
@@ -20,6 +20,8 @@ export class PermissionsGuard {
     if (!required) return true;
 
     const { user } = context.switchToHttp().getRequest<{ user: { id: number } }>();
-    return this.authorizationService.hasPermissions(user.id, required);
+    const ok = await this.authorizationService.hasPermissions(user.id, required);
+    if (!ok) throw new ForbiddenException("没有足够的权限");
+    return true;
   }
 }
