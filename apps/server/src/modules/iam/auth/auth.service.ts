@@ -78,9 +78,9 @@ export class AuthService {
       const users = tx.getRepository(User);
       const profiles = tx.getRepository(Profile);
 
-      const user = await users.save(users.create({ email, password: hashed }));
-      await profiles.save(profiles.create({ user }));
-      return user;
+      const u = await users.save(users.create({ email, password: hashed }));
+      await profiles.save(profiles.create({ user: u }));
+      return u;
     });
 
     return this.tokenService.generateTokenPair(user);
@@ -89,7 +89,10 @@ export class AuthService {
   /** 邮箱密码登录 */
   async login(email: string, password: string): Promise<TokenPair> {
     const user = await this.usersService.findByEmailWithPassword(email);
-    if (!user) throw new InvalidCredentialsException();
+    if (!user) {
+      await argon2.hash(password);
+      throw new InvalidCredentialsException();
+    }
     if (!(await argon2.verify(user.password, password))) throw new InvalidCredentialsException();
     if (user.status !== 1) throw new AccountDisabledException();
     return this.tokenService.generateTokenPair(user);
