@@ -5,11 +5,7 @@
     "dev": "nest start --watch",
     "build": "nest build",
     "preview": "cross-env NODE_ENV=production node dist/main.js",
-    "check": "tsc --noEmit",
-    "migration:generate": "typeorm-ts-node-commonjs migration:generate -d src/infrastructure/database/migration.config.ts",
-    "migration:run": "typeorm-ts-node-commonjs migration:run -d src/infrastructure/database/migration.config.ts",
-    "migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/infrastructure/database/migration.config.ts",
-    "migration:show": "typeorm-ts-node-commonjs migration:show -d src/infrastructure/database/migration.config.ts"
+    "check": "tsc --noEmit"
   },
   "dependencies": {
     "@fastify/cors": "catalog:",
@@ -21,7 +17,6 @@
     "@nestjs/config": "catalog:",
     "@nestjs/core": "catalog:",
     "@nestjs/jwt": "catalog:",
-    "@nestjs/mapped-types": "*",
     "@nestjs/passport": "catalog:",
     "@nestjs/platform-fastify": "catalog:",
     "@nestjs/throttler": "6.5.0",

@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
-import { APP_INTERCEPTOR } from "@nestjs/core";
-import { ThrottlerModule } from "@nestjs/throttler";
+import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
+import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 
 import { AppConfigModule } from "./config/config.module";
 import { CacheModule } from "./infrastructure/cache/cache.module";
@@ -33,6 +33,7 @@ import { UsersModule } from "./modules/iam/users/users.module";
     AuditModule,
   ],
   providers: [
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_INTERCEPTOR, useClass: AuditInterceptor },
   ],
 })

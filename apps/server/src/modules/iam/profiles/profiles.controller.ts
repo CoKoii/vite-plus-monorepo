@@ -1,9 +1,8 @@
 import { Body, Controller, Get, Patch } from "@nestjs/common";
 
 import { CurrentUser } from "../auth/decorators/current-user.decorator";
-import type { User } from "../users/entities/user.entity";
+import { User } from "../users/entities/user.entity";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
-import { Profile } from "./entities/profile.entity";
 import { ProfilesService } from "./profiles.service";
 
 @Controller("profiles")
@@ -11,12 +10,15 @@ export class ProfilesController {
   constructor(private readonly profilesService: ProfilesService) {}
 
   @Get("me")
-  getMyProfile(@CurrentUser() user: User): Promise<Profile | null> {
+  getMyProfile(@CurrentUser() user: User) {
     return this.profilesService.findMyProfile(user.id);
   }
 
   @Patch("me")
-  updateMyProfile(@CurrentUser() user: User, @Body() dto: UpdateProfileDto): Promise<Profile> {
+  updateMyProfile(
+    @CurrentUser() user: User,
+    @Body() dto: UpdateProfileDto,
+  ) {
     return this.profilesService.updateMyProfile(user.id, dto);
   }
 }

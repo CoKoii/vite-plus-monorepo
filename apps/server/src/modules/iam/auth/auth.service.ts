@@ -88,7 +88,7 @@ export class AuthService {
 
   /** 邮箱密码登录 */
   async login(email: string, password: string): Promise<TokenPair> {
-    const user = await this.usersService.findByEmailWithPassword(email);
+    const user = await this.usersService.findByEmail(email, true);
     if (!user) {
       await argon2.hash(password);
       throw new InvalidCredentialsException();

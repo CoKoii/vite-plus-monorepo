@@ -18,6 +18,7 @@ export class AuthController {
     return this.authService.generateCaptcha(dto);
   }
 
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
   @Public() @Post("register")
   register(@Body() dto: RegisterAuthDto) {
     return this.authService.register(dto);

@@ -6,7 +6,7 @@ import { User } from "../../users/entities/user.entity";
 @Entity({ comment: "用户资料" })
 export class Profile extends BaseEntity {
   @OneToOne(() => User, { onDelete: "CASCADE" })
-  @JoinColumn({ name: "user_id" })
+  @JoinColumn()
   user!: User;
 
   @Column({ comment: "昵称", length: 50, default: "" })
@@ -17,6 +17,4 @@ export class Profile extends BaseEntity {
 
   @Column({ comment: "个人简介", length: 500, default: "" })
   bio!: string;
-
-  user_id!: number;
 }

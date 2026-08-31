@@ -1,4 +1,10 @@
-import { Injectable, Logger, type CallHandler, type ExecutionContext, type NestInterceptor } from "@nestjs/common";
+import {
+  Injectable,
+  Logger,
+  type CallHandler,
+  type ExecutionContext,
+  type NestInterceptor,
+} from "@nestjs/common";
 import { Observable, tap } from "rxjs";
 
 import { AuditService } from "../../modules/audit/audit.service";
@@ -8,12 +14,12 @@ import { AuditService } from "../../modules/audit/audit.service";
 export class AuditInterceptor implements NestInterceptor {
   private readonly logger = new Logger(AuditInterceptor.name);
 
-  constructor(
-    private readonly auditService: AuditService,
-  ) {}
+  constructor(private readonly auditService: AuditService) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    const req = context.switchToHttp().getRequest<{ method: string; url: string; ip: string; user?: { id: number } }>();
+    const req = context
+      .switchToHttp()
+      .getRequest<{ method: string; url: string; ip: string; user?: { id: number } }>();
 
     if (!["POST", "PUT", "PATCH", "DELETE"].includes(req.method)) return next.handle();
 
@@ -28,7 +34,12 @@ export class AuditInterceptor implements NestInterceptor {
     );
   }
 
-  private audit(meta: { userId?: number; action: string; resource: string; ip?: string }, detail: Record<string, any>) {
-    this.auditService.log({ ...meta, detail }).catch((e) => this.logger.warn("审计日志写入失败", e));
+  private audit(
+    meta: { userId?: number; action: string; resource: string; ip?: string },
+    detail: Record<string, any>,
+  ) {
+    this.auditService
+      .log({ ...meta, detail })
+      .catch((e) => this.logger.warn("审计日志写入失败", e));
   }
 }

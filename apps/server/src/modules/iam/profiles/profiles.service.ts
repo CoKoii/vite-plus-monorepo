@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
@@ -12,20 +12,20 @@ export class ProfilesService {
     private readonly profileRepository: Repository<Profile>,
   ) {}
 
-  /** 获取当前用户资料 */
-  findMyProfile(userId: number): Promise<Profile | null> {
+  findMyProfile(userId: number) {
     return this.profileRepository.findOne({
       where: { user: { id: userId } },
       relations: { user: true },
     });
   }
 
-  /** 更新当前用户资料 */
-  async updateMyProfile(userId: number, dto: UpdateProfileDto): Promise<Profile> {
-    const profile = await this.profileRepository.findOne({
+  async updateMyProfile(userId: number, dto: UpdateProfileDto) {
+    let profile = await this.profileRepository.findOne({
       where: { user: { id: userId } },
     });
-    if (!profile) throw new NotFoundException("用户资料不存在");
+    if (!profile) {
+      profile = this.profileRepository.create({ user: { id: userId } as any });
+    }
     Object.assign(profile, dto);
     return this.profileRepository.save(profile);
   }

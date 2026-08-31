@@ -4,6 +4,15 @@ import { Repository } from "typeorm";
 
 import { AuditLog } from "./entities/audit-log.entity";
 
+export class AuditLogParams {
+  userId?: number;
+  action!: string;
+  resource!: string;
+  resourceId?: number;
+  ip?: string;
+  detail?: Record<string, any>;
+}
+
 @Injectable()
 export class AuditService {
   constructor(
@@ -11,7 +20,7 @@ export class AuditService {
     private readonly auditRepository: Repository<AuditLog>,
   ) {}
 
-  async log(params: { userId?: number; action: string; resource: string; resourceId?: number; ip?: string; detail?: Record<string, any> }) {
+  async log(params: AuditLogParams) {
     await this.auditRepository.save(this.auditRepository.create(params));
   }
 }

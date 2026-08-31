@@ -34,7 +34,14 @@ export class BusinessExceptionFilter implements ExceptionFilter {
 
   catch(exception: BusinessException, host: ArgumentsHost) {
     const req = getRequest(host);
-    this.logger.warn({ requestId: req.id, method: req.method, url: req.url, statusCode: exception.httpStatus, code: exception.code, message: exception.message });
+    this.logger.warn({
+      requestId: req.id,
+      method: req.method,
+      url: req.url,
+      statusCode: exception.httpStatus,
+      code: exception.code,
+      message: exception.message,
+    });
     this.httpAdapterHost.httpAdapter.reply(
       host.switchToHttp().getResponse(),
       { code: exception.code, message: exception.message, requestId: req.id ?? null },
@@ -65,10 +72,19 @@ export class HttpExceptionFilter implements ExceptionFilter {
     } else {
       const body = resp as Record<string, any>;
       code = (body["code"] as string) ?? statusToErrorCode(status);
-      message = Array.isArray(body["message"]) ? body["message"].join("; ") : (body["message"] ?? exception.message);
+      message = Array.isArray(body["message"])
+        ? body["message"].join("; ")
+        : (body["message"] ?? exception.message);
     }
 
-    this.logger.warn({ requestId: req.id, method: req.method, url: req.url, statusCode: status, code, message });
+    this.logger.warn({
+      requestId: req.id,
+      method: req.method,
+      url: req.url,
+      statusCode: status,
+      code,
+      message,
+    });
     this.httpAdapterHost.httpAdapter.reply(
       host.switchToHttp().getResponse(),
       { code, message, requestId: req.id ?? null },
@@ -90,7 +106,14 @@ export class UnknownExceptionFilter implements ExceptionFilter {
     const req = ctx.getRequest<{ id?: string; method: string; url: string }>();
     const res = ctx.getResponse<any>();
     if (res.sent) return;
-    this.logger.error({ requestId: req.id, method: req.method, url: req.url, statusCode: HttpStatus.INTERNAL_SERVER_ERROR, code: ErrorCode.INTERNAL_ERROR, exception });
+    this.logger.error({
+      requestId: req.id,
+      method: req.method,
+      url: req.url,
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+      code: ErrorCode.INTERNAL_ERROR,
+      exception,
+    });
     this.httpAdapterHost.httpAdapter.reply(
       res,
       { code: ErrorCode.INTERNAL_ERROR, message: "服务器内部错误", requestId: req.id ?? null },

@@ -15,7 +15,6 @@ import { TypeOrmModule } from "@nestjs/typeorm";
         database: cs.getOrThrow("DB_DATABASE"),
         autoLoadEntities: true,
         synchronize: cs.get("NODE_ENV") === "development",
-        migrationsRun: false,
         logging: cs.get("NODE_ENV") === "development",
         extra: { max: cs.getOrThrow<number>("DB_POOL_MAX") },
       }),

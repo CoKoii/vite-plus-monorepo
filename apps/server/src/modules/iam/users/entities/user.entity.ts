@@ -11,14 +11,10 @@ export class User extends BaseEntity {
   @Column({ comment: "密码", select: false })
   password!: string;
 
-  @Column({ comment: "状态 1=启用 0=禁用", default: 1 })
+  @Column({ comment: "状态", default: 1 })
   status!: number;
 
   @ManyToMany(() => Role)
-  @JoinTable({
-    name: "user_role",
-    joinColumn: { name: "user_id", referencedColumnName: "id" },
-    inverseJoinColumn: { name: "role_id", referencedColumnName: "id" },
-  })
+  @JoinTable()
   roles!: Role[];
 }
