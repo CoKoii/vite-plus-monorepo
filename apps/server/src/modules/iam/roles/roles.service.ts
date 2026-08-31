@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { In, Repository } from "typeorm";
 
@@ -9,7 +9,7 @@ import { CreateRoleDto } from "./dto/create-role.dto";
 import { UpdateRoleDto } from "./dto/update-role.dto";
 import { Role } from "./entities/role.entity";
 
-/** 角色管理服务，角色权限/状态变更时自动传播版本号使缓存失效 */
+/** 角色管理服务，角色权限/状态/编码变更时自动传播版本号使缓存失效 */
 @Injectable()
 export class RolesService {
   constructor(
@@ -77,16 +77,33 @@ export class RolesService {
 
     const saved = await this.roleRepository.save(role);
 
-    // 权限/状态变更 → 仅该角色版本号 +1，只有拥有该角色的用户缓存会失效
-    if (dto.permissionIds !== undefined || (dto.status !== undefined && dto.status !== oldStatus)) {
+    // 影响授权的字段（code/status/permissions）变更 → 角色版本号 +1
+    const authorizationChanged =
+      dto.code !== undefined ||
+      (dto.status !== undefined && dto.status !== oldStatus) ||
+      dto.permissionIds !== undefined;
+
+    if (authorizationChanged) {
       await this.authorizationService.incrementRoleVersion(id);
     }
     return saved;
   }
 
   async delete(id: number) {
-    const result = await this.roleRepository.delete(id);
-    if (result.affected === 0) throw new NotFoundException("角色不存在");
+    const role = await this.roleRepository.findOne({ where: { id } });
+    if (!role) throw new NotFoundException("角色不存在");
+
+    // 已分配给用户的角色禁止物理删除，只允许禁用（status=0）
+    const result = await this.roleRepository.query(
+      'SELECT COUNT(*)::int AS cnt FROM user_roles_role WHERE "roleId" = $1',
+      [id],
+    );
+    const userCount = result[0]?.cnt ?? 0;
+    if (userCount > 0) {
+      throw new BadRequestException("角色已被用户使用，请先禁用而不是删除");
+    }
+
+    await this.roleRepository.remove(role);
     await this.authorizationService.incrementRoleVersion(id);
   }
 }
