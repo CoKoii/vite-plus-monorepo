@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { In, Repository } from "typeorm";
 
+import { PaginatedResult, PaginationQuery } from "../../../common/dto/pagination.dto";
 import { Role } from "../roles/entities/role.entity";
 import { User } from "./entities/user.entity";
 
@@ -21,15 +22,33 @@ export class UsersService {
   }
 
   findById(id: number) {
-    return this.userRepository.findOne({ where: { id } });
+    return this.userRepository.findOne({
+      where: { id },
+      relations: { roles: { permissions: true } },
+    });
   }
 
   create(email: string, password: string) {
     return this.userRepository.save(this.userRepository.create({ email, password }));
   }
 
-  findAll() {
-    return this.userRepository.find({ relations: { roles: { permissions: true } } });
+  /** 列表：分页 + 只带角色，不带权限 */
+  async findAll(query: PaginationQuery): Promise<PaginatedResult<User>> {
+    const page = query.page ?? 1;
+    const pageSize = query.pageSize ?? 20;
+    const skip = (page - 1) * pageSize;
+
+    const [items, total] = await this.userRepository.findAndCount({
+      relations: { roles: true },
+      skip,
+      take: pageSize,
+      order: { createdAt: "DESC" },
+    });
+
+    return {
+      items,
+      meta: { page, pageSize, total, totalPages: Math.ceil(total / pageSize) },
+    };
   }
 
   async updateRoles(id: number, roleIds: number[]) {

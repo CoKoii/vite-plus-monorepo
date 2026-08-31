@@ -1,4 +1,4 @@
-import { IsOptional, IsString, MaxLength } from "class-validator";
+import { IsInt, IsOptional, IsString, MaxLength, Min } from "class-validator";
 
 export class UpdatePermissionDto {
   @IsString()
@@ -15,4 +15,9 @@ export class UpdatePermissionDto {
   @MaxLength(200)
   @IsOptional()
   description?: string;
+
+  @IsInt()
+  @Min(0)
+  @IsOptional()
+  status?: number;
 }

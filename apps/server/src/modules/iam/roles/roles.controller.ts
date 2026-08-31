@@ -7,8 +7,10 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
 } from "@nestjs/common";
 
+import { PaginationQuery } from "../../../common/dto/pagination.dto";
 import { CreateRoleDto } from "./dto/create-role.dto";
 import { UpdateRoleDto } from "./dto/update-role.dto";
 import { RolesService } from "./roles.service";
@@ -18,8 +20,8 @@ export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
 
   @Get()
-  findAll() {
-    return this.rolesService.findAll();
+  findAll(@Query() query: PaginationQuery) {
+    return this.rolesService.findAll(query);
   }
 
   @Get(":id")

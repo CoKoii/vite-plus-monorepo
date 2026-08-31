@@ -5,8 +5,10 @@ import {
   Param,
   ParseIntPipe,
   Patch,
+  Query,
 } from "@nestjs/common";
 
+import { PaginationQuery } from "../../../common/dto/pagination.dto";
 import { AuthorizationService } from "../auth/authorization.service";
 import { UpdateUserRolesDto } from "./dto/update-user-roles.dto";
 import { UsersService } from "./users.service";
@@ -19,8 +21,8 @@ export class UsersController {
   ) {}
 
   @Get()
-  findAll() {
-    return this.usersService.findAll();
+  findAll(@Query() query: PaginationQuery) {
+    return this.usersService.findAll(query);
   }
 
   @Get(":id")

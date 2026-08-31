@@ -7,8 +7,10 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
 } from "@nestjs/common";
 
+import { PaginationQuery } from "../../../common/dto/pagination.dto";
 import { CreatePermissionDto } from "./dto/create-permission.dto";
 import { UpdatePermissionDto } from "./dto/update-permission.dto";
 import { PermissionsService } from "./permissions.service";
@@ -18,8 +20,8 @@ export class PermissionsController {
   constructor(private readonly permissionsService: PermissionsService) {}
 
   @Get()
-  findAll() {
-    return this.permissionsService.findAll();
+  findAll(@Query() query: PaginationQuery) {
+    return this.permissionsService.findAll(query);
   }
 
   @Get(":id")
