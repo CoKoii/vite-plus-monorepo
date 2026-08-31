@@ -9,7 +9,7 @@ import { CreateRoleDto } from "./dto/create-role.dto";
 import { UpdateRoleDto } from "./dto/update-role.dto";
 import { Role } from "./entities/role.entity";
 
-/** 角色管理服务，角色权限/状态/编码变更时自动传播版本号使缓存失效 */
+/** 角色管理服务，角色权限/状态变更时自动传播版本号使缓存失效 */
 @Injectable()
 export class RolesService {
   constructor(
@@ -19,6 +19,16 @@ export class RolesService {
     private readonly permissionRepository: Repository<Permission>,
     private readonly authorizationService: AuthorizationService,
   ) {}
+
+  /** 校验并获取权限列表，数量不匹配时拒绝 */
+  private async findPermissionsOrThrow(ids: number[]) {
+    if (!ids.length) return [];
+    const permissions = await this.permissionRepository.findBy({ id: In(ids) });
+    if (permissions.length !== ids.length) {
+      throw new BadRequestException("存在无效的权限 ID");
+    }
+    return permissions;
+  }
 
   async findAll(query: PaginationQuery): Promise<PaginatedResult<Role>> {
     const page = query.page ?? 1;
@@ -50,9 +60,7 @@ export class RolesService {
       description: dto.description,
     });
     if (dto.permissionIds?.length) {
-      role.permissions = await this.permissionRepository.findBy({
-        id: In(dto.permissionIds),
-      });
+      role.permissions = await this.findPermissionsOrThrow(dto.permissionIds);
     }
     return this.roleRepository.save(role);
   }
@@ -66,44 +74,27 @@ export class RolesService {
 
     const oldStatus = role.status;
     if (dto.name !== undefined) role.name = dto.name;
-    if (dto.code !== undefined) role.code = dto.code;
     if (dto.description !== undefined) role.description = dto.description;
     if (dto.permissionIds !== undefined) {
       role.permissions = dto.permissionIds.length
-        ? await this.permissionRepository.findBy({ id: In(dto.permissionIds) })
+        ? await this.findPermissionsOrThrow(dto.permissionIds)
         : [];
     }
     if (dto.status !== undefined) role.status = dto.status;
 
     const saved = await this.roleRepository.save(role);
 
-    // 影响授权的字段（code/status/permissions）变更 → 角色版本号 +1
-    const authorizationChanged =
-      dto.code !== undefined ||
-      (dto.status !== undefined && dto.status !== oldStatus) ||
-      dto.permissionIds !== undefined;
-
-    if (authorizationChanged) {
+    // 影响授权的字段（status/permissions）变更 → 角色版本号 +1
+    if ((dto.status !== undefined && dto.status !== oldStatus) || dto.permissionIds !== undefined) {
       await this.authorizationService.incrementRoleVersion(id);
     }
     return saved;
   }
 
+  /** 删除角色。已分配用户的角色由数据库 FK 约束拒绝，不会级联删除关联 */
   async delete(id: number) {
-    const role = await this.roleRepository.findOne({ where: { id } });
-    if (!role) throw new NotFoundException("角色不存在");
-
-    // 已分配给用户的角色禁止物理删除，只允许禁用（status=0）
-    const result = await this.roleRepository.query(
-      'SELECT COUNT(*)::int AS cnt FROM user_roles_role WHERE "roleId" = $1',
-      [id],
-    );
-    const userCount = result[0]?.cnt ?? 0;
-    if (userCount > 0) {
-      throw new BadRequestException("角色已被用户使用，请先禁用而不是删除");
-    }
-
-    await this.roleRepository.remove(role);
+    const result = await this.roleRepository.delete(id);
+    if (result.affected === 0) throw new NotFoundException("角色不存在");
     await this.authorizationService.incrementRoleVersion(id);
   }
 }

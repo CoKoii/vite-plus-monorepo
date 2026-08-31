@@ -14,7 +14,7 @@ export class User extends BaseEntity {
   @Column({ comment: "状态", default: 1 })
   status!: number;
 
-  @ManyToMany(() => Role)
+  @ManyToMany(() => Role, { onDelete: "RESTRICT" })
   @JoinTable()
   roles!: Role[];
 }
