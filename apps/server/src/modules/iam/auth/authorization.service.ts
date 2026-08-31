@@ -17,7 +17,7 @@ interface PermsCacheEntry {
   data: string[];
 }
 
-/** 权限校验核心服务，角色级版本号缓存，改角色只影响拥有该角色的用户 */
+/** 权限校验核心服务，角色级版本号缓存，热路径纯 Redis 零 DB 查询 */
 @Injectable()
 export class AuthorizationService {
   constructor(
@@ -27,15 +27,22 @@ export class AuthorizationService {
     private readonly cache: Cache,
   ) {}
 
-  private async getRoleVersion(roleId: number): Promise<number> {
-    const v = await this.cache.get<number>(`authz:role:version:${roleId}`);
-    return v ?? 0;
+  /** 获取底层 Redis 客户端，用于原子操作 */
+  private get redis() {
+    return (this.cache.stores as any)[0]?.store?.client;
   }
 
-  /** 角色权限变更时调用，仅该角色版本 +1，不影响其他角色 */
+  /** 批量获取角色版本号 */
+  private async getRoleVersions(roleIds: number[]): Promise<number[]> {
+    if (!roleIds.length) return [];
+    const keys = roleIds.map((id) => `authz:role:version:${id}`);
+    const values: (string | null)[] = await this.redis.mGet(keys);
+    return values.map((v) => (v !== null ? Number(v) : 0));
+  }
+
+  /** 角色权限变更时原子递增版本号，不设 TTL */
   async incrementRoleVersion(roleId: number) {
-    const v = await this.getRoleVersion(roleId);
-    await this.cache.set(`authz:role:version:${roleId}`, v + 1, CACHE_TTL);
+    await this.redis.incr(`authz:role:version:${roleId}`);
   }
 
   /** 获取用户角色编码列表（缓存 5 分钟） */
@@ -55,30 +62,27 @@ export class AuthorizationService {
     return new Set(codes);
   }
 
-  /** 获取用户权限码列表，带角色级版本号校验 */
+  /** 获取用户权限码列表，热路径纯 Redis 零 DB 查询 */
   async getPermissions(userId: number) {
-    const cacheKey = `authz:perms:${userId}`;
-    const cached = await this.cache.get<PermsCacheEntry>(cacheKey);
+    const permsKey = `authz:perms:${userId}`;
+    const rolesKey = `authz:user:roles:${userId}`;
 
-    if (cached) {
-      // 逐角色校验版本号，只有版本变化的角色才需要重算
-      const user = await this.userRepository.findOne({
-        where: { id: userId },
-        relations: { roles: true },
-      });
-      if (user) {
-        const activeRoles = user.roles.filter((r) => r.status === 1);
-        const allMatch = await Promise.all(
-          activeRoles.map(async (r) => {
-            const currentVersion = await this.getRoleVersion(r.id);
-            return cached.roleVersions[r.id] === currentVersion;
-          }),
-        );
-        if (allMatch.every(Boolean)) return new Set(cached.data);
-      }
+    // 1. 读缓存
+    const [cachedPerms, cachedRoleIds] = await Promise.all([
+      this.cache.get<PermsCacheEntry>(permsKey),
+      this.cache.get<number[]>(rolesKey),
+    ]);
+
+    // 2. 缓存命中 → 批量校验角色版本号，零 DB 查询
+    if (cachedPerms && cachedRoleIds?.length) {
+      const versions = await this.getRoleVersions(cachedRoleIds);
+      const allMatch = cachedRoleIds.every(
+        (id, i) => cachedPerms.roleVersions[id] === versions[i],
+      );
+      if (allMatch) return new Set(cachedPerms.data);
     }
 
-    // 缓存失效或不存在，从 DB 重新计算
+    // 3. 缓存失效或不存在，从 DB 重新计算
     const user = await this.userRepository.findOne({
       where: { id: userId },
       relations: { roles: { permissions: true } },
@@ -86,25 +90,31 @@ export class AuthorizationService {
     if (!user) return new Set<string>();
 
     const activeRoles = user.roles.filter((r) => r.status === 1);
+    const roleIds = activeRoles.map((r) => r.id);
+    const versions = await this.getRoleVersions(roleIds);
     const roleVersions: RoleVersions = {};
-    await Promise.all(
-      activeRoles.map(async (r) => {
-        roleVersions[r.id] = await this.getRoleVersion(r.id);
-      }),
-    );
+    roleIds.forEach((id, i) => {
+      roleVersions[id] = versions[i] ?? 0;
+    });
 
     const codes = activeRoles.flatMap(
       (r) => r.permissions?.filter((p) => p.status === 1).map((p) => p.code) ?? [],
     );
-    await this.cache.set(cacheKey, { roleVersions, data: codes }, CACHE_TTL);
+
+    // 4. 同时缓存权限结果和角色列表，下次校验不查 DB
+    await Promise.all([
+      this.cache.set(permsKey, { roleVersions, data: codes }, CACHE_TTL),
+      this.cache.set(rolesKey, roleIds, CACHE_TTL),
+    ]);
     return new Set(codes);
   }
 
-  /** 清除单个用户缓存，用户角色变更时调用 */
+  /** 清除单个用户缓存（用户角色变更时调用） */
   async clearCache(userId: number) {
     await Promise.all([
       this.cache.del(`authz:perms:${userId}`),
       this.cache.del(`authz:roles:${userId}`),
+      this.cache.del(`authz:user:roles:${userId}`),
     ]);
   }
 

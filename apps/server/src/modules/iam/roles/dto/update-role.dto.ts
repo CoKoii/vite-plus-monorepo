@@ -1,4 +1,4 @@
-import { IsArray, IsInt, IsOptional, IsString, MaxLength } from "class-validator";
+import { IsArray, IsInt, IsOptional, IsString, MaxLength, Min } from "class-validator";
 
 export class UpdateRoleDto {
   @IsString()
@@ -15,6 +15,11 @@ export class UpdateRoleDto {
   @MaxLength(200)
   @IsOptional()
   description?: string;
+
+  @IsInt()
+  @Min(0)
+  @IsOptional()
+  status?: number;
 
   @IsArray()
   @IsInt({ each: true })

@@ -9,7 +9,7 @@ import { CreateRoleDto } from "./dto/create-role.dto";
 import { UpdateRoleDto } from "./dto/update-role.dto";
 import { Role } from "./entities/role.entity";
 
-/** 角色管理服务，角色权限变更时自动传播版本号使缓存失效 */
+/** 角色管理服务，角色权限/状态变更时自动传播版本号使缓存失效 */
 @Injectable()
 export class RolesService {
   constructor(
@@ -64,6 +64,7 @@ export class RolesService {
     });
     if (!role) throw new NotFoundException("角色不存在");
 
+    const oldStatus = role.status;
     if (dto.name !== undefined) role.name = dto.name;
     if (dto.code !== undefined) role.code = dto.code;
     if (dto.description !== undefined) role.description = dto.description;
@@ -72,10 +73,12 @@ export class RolesService {
         ? await this.permissionRepository.findBy({ id: In(dto.permissionIds) })
         : [];
     }
+    if (dto.status !== undefined) role.status = dto.status;
 
     const saved = await this.roleRepository.save(role);
-    // 权限变更 → 仅该角色版本号 +1，只有拥有该角色的用户缓存会失效
-    if (dto.permissionIds !== undefined) {
+
+    // 权限/状态变更 → 仅该角色版本号 +1，只有拥有该角色的用户缓存会失效
+    if (dto.permissionIds !== undefined || (dto.status !== undefined && dto.status !== oldStatus)) {
       await this.authorizationService.incrementRoleVersion(id);
     }
     return saved;

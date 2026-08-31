@@ -1,4 +1,4 @@
-import { IsInt, IsOptional, Min } from "class-validator";
+import { IsInt, IsOptional, Max, Min } from "class-validator";
 import { Type } from "class-transformer";
 
 /** 分页查询参数，page 从 1 开始 */
@@ -13,6 +13,7 @@ export class PaginationQuery {
   @Type(() => Number)
   @IsInt()
   @Min(1)
+  @Max(100)
   pageSize?: number = 20;
 }
 
