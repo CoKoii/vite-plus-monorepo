@@ -4,6 +4,7 @@ import { InjectDataSource } from "@nestjs/typeorm";
 import type { Cache } from "cache-manager";
 import { DataSource } from "typeorm";
 
+/** 健康检查服务，验证 DB 和 Redis 连通性 */
 @Injectable()
 export class HealthService {
   constructor(

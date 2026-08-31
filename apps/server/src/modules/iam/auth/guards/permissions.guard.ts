@@ -1,12 +1,16 @@
-import { type ExecutionContext, ForbiddenException, Injectable } from "@nestjs/common";
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+} from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-
 import { PERMISSIONS_KEY } from "../decorators/permissions.decorator";
+
 import { AuthorizationService } from "../authorization.service";
 
 /** 权限校验守卫，通过 AuthorizationService 查库校验 */
 @Injectable()
-export class PermissionsGuard {
+export class PermissionsGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly authorizationService: AuthorizationService,
@@ -17,11 +21,11 @@ export class PermissionsGuard {
       context.getHandler(),
       context.getClass(),
     ]);
-    if (!required) return true;
+    if (!required?.length) return true;
 
     const { user } = context.switchToHttp().getRequest<{ user?: { id: number } }>();
-    // 没有用户（如 @Public() 路由）但要求权限 → 拒绝
-    if (!user) throw new ForbiddenException("没有足够的权限");
+    if (!user) return false;
+
     return this.authorizationService.hasPermissions(user.id, required);
   }
 }

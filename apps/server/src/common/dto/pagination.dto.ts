@@ -1,7 +1,7 @@
 import { IsInt, IsOptional, Min } from "class-validator";
 import { Type } from "class-transformer";
 
-/** 分页查询参数 */
+/** 分页查询参数，page 从 1 开始 */
 export class PaginationQuery {
   @IsOptional()
   @Type(() => Number)
@@ -16,7 +16,7 @@ export class PaginationQuery {
   pageSize?: number = 20;
 }
 
-/** 分页响应 */
+/** 分页响应结构，包含列表和元信息 */
 export class PaginatedResult<T> {
   items!: T[];
   meta!: {

@@ -1,3 +1,4 @@
+/** 全局 JWT 守卫，标记 @Public() 的接口跳过校验 */
 import { type ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { AuthGuard } from "@nestjs/passport";

@@ -15,6 +15,7 @@ import { CreatePermissionDto } from "./dto/create-permission.dto";
 import { UpdatePermissionDto } from "./dto/update-permission.dto";
 import { PermissionsService } from "./permissions.service";
 
+/** 权限管理 CRUD 接口 */
 @Controller("permissions")
 export class PermissionsController {
   constructor(private readonly permissionsService: PermissionsService) {}

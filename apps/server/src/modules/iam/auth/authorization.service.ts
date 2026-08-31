@@ -17,6 +17,7 @@ interface PermsCacheEntry {
   data: string[];
 }
 
+/** 权限校验核心服务，角色级版本号缓存，改角色只影响拥有该角色的用户 */
 @Injectable()
 export class AuthorizationService {
   constructor(
@@ -26,19 +27,18 @@ export class AuthorizationService {
     private readonly cache: Cache,
   ) {}
 
-  /** 获取指定角色的版本号 */
   private async getRoleVersion(roleId: number): Promise<number> {
     const v = await this.cache.get<number>(`authz:role:version:${roleId}`);
     return v ?? 0;
   }
 
-  /** 角色权限变更时调用，仅该角色版本 +1 */
+  /** 角色权限变更时调用，仅该角色版本 +1，不影响其他角色 */
   async incrementRoleVersion(roleId: number) {
     const v = await this.getRoleVersion(roleId);
     await this.cache.set(`authz:role:version:${roleId}`, v + 1, CACHE_TTL);
   }
 
-  /** 获取用户角色编码集合 */
+  /** 获取用户角色编码列表（缓存 5 分钟） */
   async getRoles(userId: number) {
     const cacheKey = `authz:roles:${userId}`;
     const cached = await this.cache.get<string[]>(cacheKey);
@@ -55,13 +55,13 @@ export class AuthorizationService {
     return new Set(codes);
   }
 
-  /** 获取用户权限码集合（角色级版本号校验） */
+  /** 获取用户权限码列表，带角色级版本号校验 */
   async getPermissions(userId: number) {
     const cacheKey = `authz:perms:${userId}`;
     const cached = await this.cache.get<PermsCacheEntry>(cacheKey);
 
     if (cached) {
-      // 逐角色校验版本号——只有版本变化的角色才需要重算
+      // 逐角色校验版本号，只有版本变化的角色才需要重算
       const user = await this.userRepository.findOne({
         where: { id: userId },
         relations: { roles: true },
@@ -78,7 +78,7 @@ export class AuthorizationService {
       }
     }
 
-    // 缓存失效或不存在，重新计算
+    // 缓存失效或不存在，从 DB 重新计算
     const user = await this.userRepository.findOne({
       where: { id: userId },
       relations: { roles: { permissions: true } },
@@ -100,7 +100,7 @@ export class AuthorizationService {
     return new Set(codes);
   }
 
-  /** 清除单个用户缓存（用户角色变更时调用） */
+  /** 清除单个用户缓存，用户角色变更时调用 */
   async clearCache(userId: number) {
     await Promise.all([
       this.cache.del(`authz:perms:${userId}`),

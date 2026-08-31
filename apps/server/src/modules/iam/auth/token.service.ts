@@ -1,3 +1,4 @@
+/** Token 管理服务：签发、校验、轮换 access/refresh token */
 import { randomBytes, createHash } from "node:crypto";
 
 import { CACHE_MANAGER } from "@nestjs/cache-manager";

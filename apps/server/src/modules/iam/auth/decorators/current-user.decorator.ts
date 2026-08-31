@@ -1,11 +1,9 @@
 import { createParamDecorator, type ExecutionContext } from "@nestjs/common";
 
-import type { User } from "../../users/entities/user.entity";
-
-/** 从请求中提取当前登录用户 */
+/** 从请求中提取当前登录用户对象 */
 export const CurrentUser = createParamDecorator(
-  (data: keyof User | undefined, ctx: ExecutionContext) => {
-    const user = ctx.switchToHttp().getRequest<{ user: User }>().user;
-    return data ? user?.[data] : user;
+  (_data: unknown, ctx: ExecutionContext) => {
+    const request = ctx.switchToHttp().getRequest<{ user?: any }>();
+    return request.user;
   },
 );

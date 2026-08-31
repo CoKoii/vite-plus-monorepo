@@ -1,21 +1,21 @@
 import {
+  Injectable,
   type CallHandler,
   type ExecutionContext,
-  Injectable,
   type NestInterceptor,
 } from "@nestjs/common";
-import { map, type Observable } from "rxjs";
+import { Observable, map } from "rxjs";
 
-/* 统一成功响应格式 */
+/** 统一响应格式拦截器，所有成功响应包装为 { code, data, requestId } */
 @Injectable()
-export class ResponseInterceptor<T> implements NestInterceptor<T, unknown> {
-  intercept(context: ExecutionContext, next: CallHandler<T>): Observable<unknown> {
-    const request = context.switchToHttp().getRequest<{ id?: string }>();
+export class ResponseInterceptor implements NestInterceptor {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    const request = context.switchToHttp().getRequest<{ id: string }>();
     return next.handle().pipe(
       map((data) => ({
         code: "SUCCESS",
-        requestId: request.id ?? null,
-        data: data ?? null,
+        requestId: request.id,
+        data,
       })),
     );
   }

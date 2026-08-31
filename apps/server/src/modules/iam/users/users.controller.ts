@@ -13,6 +13,7 @@ import { AuthorizationService } from "../auth/authorization.service";
 import { UpdateUserRolesDto } from "./dto/update-user-roles.dto";
 import { UsersService } from "./users.service";
 
+/** 用户管理接口，含角色分配和缓存清理 */
 @Controller("users")
 export class UsersController {
   constructor(
@@ -36,6 +37,7 @@ export class UsersController {
     @Body() dto: UpdateUserRolesDto,
   ) {
     const user = await this.usersService.updateRoles(id, dto.roleIds);
+    // 用户角色变更，清除该用户的权限缓存
     await this.authorizationService.clearCache(id);
     return user;
   }

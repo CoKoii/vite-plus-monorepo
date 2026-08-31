@@ -9,6 +9,7 @@ import { CreatePermissionDto } from "./dto/create-permission.dto";
 import { UpdatePermissionDto } from "./dto/update-permission.dto";
 import { Permission } from "./entities/permission.entity";
 
+/** 权限管理服务，禁用/删除权限时自动传播到关联角色的版本号 */
 @Injectable()
 export class PermissionsService {
   constructor(
@@ -53,7 +54,7 @@ export class PermissionsService {
     Object.assign(permission, dto);
     const saved = await this.permissionRepository.save(permission);
 
-    // 状态变更 → 所有包含该权限的角色版本 +1
+    // 状态变更（启用/禁用）→ 所有包含该权限的角色版本号 +1
     if (dto.status !== undefined && dto.status !== oldStatus) {
       const roles = await this.roleRepository.find({
         where: { permissions: { id } },
@@ -69,7 +70,7 @@ export class PermissionsService {
     const permission = await this.permissionRepository.findOne({ where: { id } });
     if (!permission) throw new NotFoundException("权限不存在");
 
-    // 先找出所有关联角色，递增版本号，再删除
+    // 先找出关联角色递增版本号，再删除权限
     const roles = await this.roleRepository.find({
       where: { permissions: { id } },
     });

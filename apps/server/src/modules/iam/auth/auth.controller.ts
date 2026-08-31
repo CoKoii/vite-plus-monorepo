@@ -1,3 +1,4 @@
+/** 认证接口：验证码、注册、登录、刷新、退出 */
 import { Body, Controller, Post } from "@nestjs/common";
 import { Throttle } from "@nestjs/throttler";
 

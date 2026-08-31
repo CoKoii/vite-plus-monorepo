@@ -13,6 +13,7 @@ export class AuditLogParams {
   detail?: Record<string, any>;
 }
 
+/** 审计日志服务，内存队列批量写入，不阻塞主请求 */
 @Injectable()
 export class AuditService {
   private readonly logger = new Logger(AuditService.name);
@@ -23,11 +24,11 @@ export class AuditService {
     @InjectRepository(AuditLog)
     private readonly auditRepository: Repository<AuditLog>,
   ) {
-    // 每 3 秒批量写入一次
+    // 每 3 秒批量 flush 一次
     setInterval(() => this.flush(), 3000);
   }
 
-  /** 写入审计日志（同步入队，异步批量写入 DB） */
+  /** 写入审计日志，同步入队、异步批量写入 DB */
   log(params: AuditLogParams) {
     this.buffer.push(params);
     if (this.buffer.length >= 50) {

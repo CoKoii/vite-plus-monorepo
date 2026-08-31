@@ -6,6 +6,7 @@ import { PaginatedResult, PaginationQuery } from "../../../common/dto/pagination
 import { Role } from "../roles/entities/role.entity";
 import { User } from "./entities/user.entity";
 
+/** 用户管理服务，包含分页查询和角色分配 */
 @Injectable()
 export class UsersService {
   constructor(
@@ -32,19 +33,16 @@ export class UsersService {
     return this.userRepository.save(this.userRepository.create({ email, password }));
   }
 
-  /** 列表：分页 + 只带角色，不带权限 */
+  /** 分页列表，只带角色不带权限，避免深层 JOIN */
   async findAll(query: PaginationQuery): Promise<PaginatedResult<User>> {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 20;
-    const skip = (page - 1) * pageSize;
-
     const [items, total] = await this.userRepository.findAndCount({
       relations: { roles: true },
-      skip,
+      skip: (page - 1) * pageSize,
       take: pageSize,
       order: { createdAt: "DESC" },
     });
-
     return {
       items,
       meta: { page, pageSize, total, totalPages: Math.ceil(total / pageSize) },

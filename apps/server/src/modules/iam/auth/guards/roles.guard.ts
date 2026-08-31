@@ -1,12 +1,16 @@
-import { type ExecutionContext, ForbiddenException, Injectable } from "@nestjs/common";
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+} from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-
 import { ROLES_KEY } from "../decorators/roles.decorator";
+
 import { AuthorizationService } from "../authorization.service";
 
 /** 角色校验守卫，通过 AuthorizationService 查库校验 */
 @Injectable()
-export class RolesGuard {
+export class RolesGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly authorizationService: AuthorizationService,
@@ -17,11 +21,11 @@ export class RolesGuard {
       context.getHandler(),
       context.getClass(),
     ]);
-    if (!required) return true;
+    if (!required?.length) return true;
 
     const { user } = context.switchToHttp().getRequest<{ user?: { id: number } }>();
-    // 没有用户（如 @Public() 路由）但要求角色 → 拒绝
-    if (!user) throw new ForbiddenException("没有足够的角色权限");
+    if (!user) return false;
+
     return this.authorizationService.hasRoles(user.id, required);
   }
 }

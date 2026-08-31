@@ -5,6 +5,7 @@ import { User } from "../users/entities/user.entity";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { ProfilesService } from "./profiles.service";
 
+/** 当前用户资料接口 */
 @Controller("profiles")
 export class ProfilesController {
   constructor(private readonly profilesService: ProfilesService) {}
@@ -15,10 +16,7 @@ export class ProfilesController {
   }
 
   @Patch("me")
-  updateMyProfile(
-    @CurrentUser() user: User,
-    @Body() dto: UpdateProfileDto,
-  ) {
+  updateMyProfile(@CurrentUser() user: User, @Body() dto: UpdateProfileDto) {
     return this.profilesService.updateMyProfile(user.id, dto);
   }
 }

@@ -1,3 +1,4 @@
+/** 认证服务：验证码、注册、登录、刷新、退出 */
 import { randomInt } from "node:crypto";
 
 import { CACHE_MANAGER } from "@nestjs/cache-manager";

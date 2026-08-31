@@ -9,6 +9,7 @@ import { CreateRoleDto } from "./dto/create-role.dto";
 import { UpdateRoleDto } from "./dto/update-role.dto";
 import { Role } from "./entities/role.entity";
 
+/** 角色管理服务，角色权限变更时自动传播版本号使缓存失效 */
 @Injectable()
 export class RolesService {
   constructor(
@@ -73,7 +74,7 @@ export class RolesService {
     }
 
     const saved = await this.roleRepository.save(role);
-    // 权限变更 → 仅该角色版本 +1，只有拥有该角色的用户缓存会失效
+    // 权限变更 → 仅该角色版本号 +1，只有拥有该角色的用户缓存会失效
     if (dto.permissionIds !== undefined) {
       await this.authorizationService.incrementRoleVersion(id);
     }

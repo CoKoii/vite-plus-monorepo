@@ -1,11 +1,11 @@
-import { IsEmail, IsString, MinLength } from "class-validator";
+import { IsEmail, IsString, MaxLength, MinLength } from "class-validator";
 
-/** 登录请求 */
 export class LoginAuthDto {
-  @IsEmail({}, { message: "邮箱格式不正确" })
+  @IsEmail()
   email!: string;
 
   @IsString()
-  @MinLength(8, { message: "密码长度不能少于 8 位" })
+  @MinLength(8)
+  @MaxLength(32)
   password!: string;
 }

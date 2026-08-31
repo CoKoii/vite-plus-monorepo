@@ -15,6 +15,7 @@ import { CreateRoleDto } from "./dto/create-role.dto";
 import { UpdateRoleDto } from "./dto/update-role.dto";
 import { RolesService } from "./roles.service";
 
+/** 角色管理 CRUD 接口 */
 @Controller("roles")
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
