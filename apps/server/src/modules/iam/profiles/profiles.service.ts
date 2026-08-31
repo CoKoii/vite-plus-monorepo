@@ -30,9 +30,4 @@ export class ProfilesService {
     Object.assign(profile, dto);
     return this.profileRepository.save(profile);
   }
-
-  async createProfile(userId: number) {
-    const profile = this.profileRepository.create({ user: { id: userId } as any });
-    return this.profileRepository.save(profile);
-  }
 }

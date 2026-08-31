@@ -13,6 +13,8 @@ export class AuditLogParams {
   detail?: Record<string, any>;
 }
 
+const MAX_BUFFER_SIZE = 10_000;
+
 /** 审计日志服务，内存队列批量写入，不阻塞主请求 */
 @Injectable()
 export class AuditService {
@@ -24,12 +26,14 @@ export class AuditService {
     @InjectRepository(AuditLog)
     private readonly auditRepository: Repository<AuditLog>,
   ) {
-    // 每 3 秒批量 flush 一次
     setInterval(() => this.flush(), 3000);
   }
 
-  /** 写入审计日志，同步入队、异步批量写入 DB */
+  /** 写入审计日志，缓冲区满时丢弃最早的数据保护内存 */
   log(params: AuditLogParams) {
+    if (this.buffer.length >= MAX_BUFFER_SIZE) {
+      this.buffer.shift();
+    }
     this.buffer.push(params);
     if (this.buffer.length >= 50) {
       this.flush();
@@ -47,7 +51,6 @@ export class AuditService {
       );
     } catch (e) {
       this.logger.warn(`审计日志批量写入失败，${batch.length} 条待重试`, e);
-      // 写入失败放回队列头部，下次 flush 重试
       this.buffer.unshift(...batch);
     } finally {
       this.flushing = false;

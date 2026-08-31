@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { In, Repository } from "typeorm";
 
@@ -23,10 +23,7 @@ export class UsersService {
   }
 
   findById(id: number) {
-    return this.userRepository.findOne({
-      where: { id },
-      relations: { roles: { permissions: true } },
-    });
+    return this.userRepository.findOne({ where: { id } });
   }
 
   create(email: string, password: string) {
@@ -56,9 +53,19 @@ export class UsersService {
     });
     if (!user) throw new NotFoundException("用户不存在");
 
-    user.roles = roleIds.length
+    // 校验所有 roleId 存在且为启用状态
+    const roles = roleIds.length
       ? await this.roleRepository.findBy({ id: In(roleIds) })
       : [];
+    if (roles.length !== roleIds.length) {
+      throw new BadRequestException("存在无效的角色 ID");
+    }
+    const inactive = roles.filter((r) => r.status !== 1);
+    if (inactive.length > 0) {
+      throw new BadRequestException(`角色 [${inactive.map((r) => r.name).join(", ")}] 已禁用，无法分配`);
+    }
+
+    user.roles = roles;
     return this.userRepository.save(user);
   }
 }
