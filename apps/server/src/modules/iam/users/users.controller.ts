@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  ParseIntPipe,
-  Patch,
-  Query,
-} from "@nestjs/common";
+import { Body, Controller, Get, Param, ParseIntPipe, Patch, Query } from "@nestjs/common";
 
 import { PaginationQuery } from "../../../common/dto/pagination.dto";
 import { AuthorizationService } from "../auth/authorization.service";
@@ -32,10 +24,7 @@ export class UsersController {
   }
 
   @Patch(":id/roles")
-  async updateRoles(
-    @Param("id", ParseIntPipe) id: number,
-    @Body() dto: UpdateUserRolesDto,
-  ) {
+  async updateRoles(@Param("id", ParseIntPipe) id: number, @Body() dto: UpdateUserRolesDto) {
     const user = await this.usersService.updateRoles(id, dto.roleIds);
     // 用户角色变更，清除该用户的权限缓存
     await this.authorizationService.clearCache(id);

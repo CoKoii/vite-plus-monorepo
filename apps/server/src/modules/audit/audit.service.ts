@@ -36,7 +36,7 @@ export class AuditService {
     }
     this.buffer.push(params);
     if (this.buffer.length >= 50) {
-      this.flush();
+      void this.flush();
     }
   }
 
@@ -46,9 +46,7 @@ export class AuditService {
 
     const batch = this.buffer.splice(0);
     try {
-      await this.auditRepository.save(
-        batch.map((p) => this.auditRepository.create(p)),
-      );
+      await this.auditRepository.save(batch.map((p) => this.auditRepository.create(p)));
     } catch (e) {
       this.logger.warn(`审计日志批量写入失败，${batch.length} 条待重试`, e);
       this.buffer.unshift(...batch);

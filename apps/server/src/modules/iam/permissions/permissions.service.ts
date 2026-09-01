@@ -41,9 +41,7 @@ export class PermissionsService {
   }
 
   create(dto: CreatePermissionDto) {
-    return this.permissionRepository.save(
-      this.permissionRepository.create(dto),
-    );
+    return this.permissionRepository.save(this.permissionRepository.create(dto));
   }
 
   async update(id: number, dto: UpdatePermissionDto) {
@@ -59,9 +57,7 @@ export class PermissionsService {
       const roles = await this.roleRepository.find({
         where: { permissions: { id } },
       });
-      await Promise.all(
-        roles.map((r) => this.authorizationService.incrementRoleVersion(r.id)),
-      );
+      await Promise.all(roles.map((r) => this.authorizationService.incrementRoleVersion(r.id)));
     }
     return saved;
   }
@@ -75,8 +71,6 @@ export class PermissionsService {
       where: { permissions: { id } },
     });
     await this.permissionRepository.remove(permission);
-    await Promise.all(
-      roles.map((r) => this.authorizationService.incrementRoleVersion(r.id)),
-    );
+    await Promise.all(roles.map((r) => this.authorizationService.incrementRoleVersion(r.id)));
   }
 }

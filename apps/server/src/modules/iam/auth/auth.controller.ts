@@ -14,24 +14,28 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Throttle({ default: { ttl: 60000, limit: 3 } })
-  @Public() @Post("captcha")
+  @Public()
+  @Post("captcha")
   generateCaptcha(@Body() dto: GenerateCaptchaDto) {
     return this.authService.generateCaptcha(dto);
   }
 
   @Throttle({ default: { ttl: 60000, limit: 5 } })
-  @Public() @Post("register")
+  @Public()
+  @Post("register")
   register(@Body() dto: RegisterAuthDto) {
     return this.authService.register(dto);
   }
 
   @Throttle({ default: { ttl: 60000, limit: 5 } })
-  @Public() @Post("login")
+  @Public()
+  @Post("login")
   login(@Body() dto: LoginAuthDto) {
     return this.authService.login(dto.email, dto.password);
   }
 
-  @Public() @Post("refresh")
+  @Public()
+  @Post("refresh")
   refresh(@Body() dto: RefreshAuthDto) {
     return this.authService.refresh(dto.refreshToken);
   }

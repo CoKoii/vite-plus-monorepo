@@ -3,8 +3,8 @@ import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
 
-import { UsersService } from "../../users/users.service";
 import type { User } from "../../users/entities/user.entity";
+import { UsersService } from "../../users/users.service";
 import type { JwtPayload } from "../token.service";
 
 /** 解码 JWT 并查库验证用户有效性 */

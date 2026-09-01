@@ -76,9 +76,7 @@ export class AuthorizationService {
     // 2. 缓存命中 → 批量校验角色版本号，零 DB 查询
     if (cachedPerms && cachedRoleIds?.length) {
       const versions = await this.getRoleVersions(cachedRoleIds);
-      const allMatch = cachedRoleIds.every(
-        (id, i) => cachedPerms.roleVersions[id] === versions[i],
-      );
+      const allMatch = cachedRoleIds.every((id, i) => cachedPerms.roleVersions[id] === versions[i]);
       if (allMatch) return new Set(cachedPerms.data);
     }
 

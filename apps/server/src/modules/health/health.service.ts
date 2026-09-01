@@ -1,5 +1,5 @@
-import { Inject, Injectable } from "@nestjs/common";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import { Inject, Injectable } from "@nestjs/common";
 import { InjectDataSource } from "@nestjs/typeorm";
 import type { Cache } from "cache-manager";
 import { DataSource } from "typeorm";
@@ -16,8 +16,14 @@ export class HealthService {
 
   async check() {
     const [db, redis] = await Promise.all([
-      this.dataSource.query("SELECT 1").then(() => true, () => false),
-      this.cache.set("health:ping", "pong", 10000).then(() => true, () => false),
+      this.dataSource.query("SELECT 1").then(
+        () => true,
+        () => false,
+      ),
+      this.cache.set("health:ping", "pong", 10000).then(
+        () => true,
+        () => false,
+      ),
     ]);
     if (redis) await this.cache.del("health:ping");
 

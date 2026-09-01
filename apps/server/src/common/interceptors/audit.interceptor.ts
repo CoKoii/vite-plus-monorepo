@@ -25,8 +25,16 @@ export class AuditInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       tap({
-        next: () => this.auditService.log({ ...meta, detail: { status: "success", duration: Date.now() - start } }),
-        error: () => this.auditService.log({ ...meta, detail: { status: "error", duration: Date.now() - start } }),
+        next: () =>
+          this.auditService.log({
+            ...meta,
+            detail: { status: "success", duration: Date.now() - start },
+          }),
+        error: () =>
+          this.auditService.log({
+            ...meta,
+            detail: { status: "error", duration: Date.now() - start },
+          }),
       }),
     );
   }

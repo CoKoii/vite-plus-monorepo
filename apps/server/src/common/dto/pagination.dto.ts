@@ -1,5 +1,5 @@
-import { IsInt, IsOptional, Max, Min } from "class-validator";
 import { Type } from "class-transformer";
+import { IsInt, IsOptional, Max, Min } from "class-validator";
 
 /** 分页查询参数，page 从 1 开始 */
 export class PaginationQuery {

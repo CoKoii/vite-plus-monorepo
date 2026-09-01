@@ -7,8 +7,8 @@ import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import type { Cache } from "cache-manager";
 
-import { parseDuration } from "../../../common/utils/time.util";
 import { TokenInvalidException } from "../../../common/errors/business.exception";
+import { parseDuration } from "../../../common/utils/time.util";
 import type { User } from "../users/entities/user.entity";
 
 export interface JwtPayload {
@@ -51,10 +51,9 @@ export class TokenService {
 
   /** 签发 JWT access token */
   private async generateAccessToken(user: User): Promise<string> {
-    return this.jwtService.signAsync(
-      { sub: user.id, email: user.email } satisfies JwtPayload,
-      { expiresIn: this.accessExpiresSec },
-    );
+    return this.jwtService.signAsync({ sub: user.id, email: user.email } satisfies JwtPayload, {
+      expiresIn: this.accessExpiresSec,
+    });
   }
 
   /** 生成随机 refresh token，SHA256 哈希后存入 Redis */

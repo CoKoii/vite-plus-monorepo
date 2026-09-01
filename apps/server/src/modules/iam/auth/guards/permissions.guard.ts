@@ -1,12 +1,8 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  Injectable,
-} from "@nestjs/common";
+import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import { PERMISSIONS_KEY } from "../decorators/permissions.decorator";
 
 import { AuthorizationService } from "../authorization.service";
+import { PERMISSIONS_KEY } from "../decorators/permissions.decorator";
 
 /** 权限校验守卫，通过 AuthorizationService 查库校验 */
 @Injectable()

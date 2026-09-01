@@ -36,10 +36,7 @@ export class PermissionsController {
   }
 
   @Patch(":id")
-  update(
-    @Param("id", ParseIntPipe) id: number,
-    @Body() dto: UpdatePermissionDto,
-  ) {
+  update(@Param("id", ParseIntPipe) id: number, @Body() dto: UpdatePermissionDto) {
     return this.permissionsService.update(id, dto);
   }
 

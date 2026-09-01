@@ -9,7 +9,6 @@ import { WINSTON_MODULE_NEST_PROVIDER } from "nest-winston";
 import "reflect-metadata";
 
 import { AppModule } from "./app.module";
-
 import {
   BusinessExceptionFilter,
   HttpExceptionFilter,
@@ -41,7 +40,6 @@ async function bootstrap() {
   );
 
   app.useGlobalInterceptors(new ResponseInterceptor());
-
 
   const corsOrigin = configService.getOrThrow<string>("CORS_ORIGIN");
   app.enableCors({
