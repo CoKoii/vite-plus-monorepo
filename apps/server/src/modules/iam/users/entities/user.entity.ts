@@ -5,8 +5,8 @@ import { Role } from "../../roles/entities/role.entity";
 
 @Entity({ comment: "用户账户" })
 export class User extends BaseEntity {
-  @Column({ comment: "邮箱", unique: true })
-  email!: string;
+  @Column({ comment: "邮箱账号", unique: true })
+  username!: string;
 
   @Column({ comment: "密码", select: false })
   password!: string;

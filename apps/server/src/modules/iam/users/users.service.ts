@@ -16,10 +16,10 @@ export class UsersService {
     private readonly roleRepository: Repository<Role>,
   ) {}
 
-  findByEmail(email: string, selectPassword = false) {
+  findByUsername(username: string, selectPassword = false) {
     const qb = this.userRepository
       .createQueryBuilder("user")
-      .where("user.email = :email", { email });
+      .where("user.username = :username", { username });
     if (selectPassword) qb.addSelect("user.password");
     return qb.getOne();
   }
@@ -28,8 +28,8 @@ export class UsersService {
     return this.userRepository.findOne({ where: { id } });
   }
 
-  create(email: string, password: string) {
-    return this.userRepository.save(this.userRepository.create({ email, password }));
+  create(username: string, password: string) {
+    return this.userRepository.save(this.userRepository.create({ username, password }));
   }
 
   /** 分页列表，只带角色不带权限，避免深层 JOIN */

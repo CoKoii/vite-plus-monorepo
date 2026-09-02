@@ -36,6 +36,9 @@ export const envValidationSchema = joi.object({
   // 前端地址
   LOGIN_URL: joi.string().uri().required(),
 
+  // 注册验证码：关闭时可直接使用 username + password 注册
+  CAPTCHA_ENABLED: joi.boolean().default(false),
+
   // JWT
   JWT_SECRET: joi.string().min(32).required(),
   JWT_ACCESS_EXPIRES: joi.string().default("15m"),
