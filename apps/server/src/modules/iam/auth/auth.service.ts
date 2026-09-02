@@ -90,7 +90,7 @@ export class AuthService {
       const profiles = tx.getRepository(Profile);
 
       const u = await users.save(users.create({ username, password: hashed }));
-      await profiles.save(profiles.create({ user: u }));
+      await profiles.save(profiles.create({ nickname: username, user: u }));
       return u;
     });
 

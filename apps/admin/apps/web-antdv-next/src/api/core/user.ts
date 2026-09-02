@@ -1,10 +1,16 @@
-import type { UserInfo } from '@vben/types';
+import type { UserInfo } from "@vben/types";
 
-import { requestClient } from '#/api/request';
+import { requestClient } from "#/api/request";
 
 /**
  * 获取用户信息
  */
 export async function getUserInfoApi() {
-  return requestClient.get<UserInfo>('/user/info');
+  const profile = await requestClient.get<UserInfo & { nickname: string }>(
+    "/profiles/me",
+  );
+  return {
+    ...profile,
+    realName: profile.nickname,
+  };
 }

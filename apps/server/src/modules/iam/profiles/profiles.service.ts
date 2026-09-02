@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
+import { AuthorizationService } from "../auth/authorization.service";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { Profile } from "./entities/profile.entity";
 
@@ -11,13 +12,24 @@ export class ProfilesService {
   constructor(
     @InjectRepository(Profile)
     private readonly profileRepository: Repository<Profile>,
+    private readonly authorizationService: AuthorizationService,
   ) {}
 
-  findMyProfile(userId: number) {
-    return this.profileRepository.findOne({
+  async findMyProfile(userId: number) {
+    const profile = await this.profileRepository.findOneOrFail({
       where: { user: { id: userId } },
-      relations: { user: true },
     });
+    const [roles, permissions] = await Promise.all([
+      this.authorizationService.getRoles(userId),
+      this.authorizationService.getPermissions(userId),
+    ]);
+
+    const { ...profileData } = profile;
+    return {
+      ...profileData,
+      permissions: [...permissions],
+      roles: [...roles],
+    };
   }
 
   async updateMyProfile(userId: number, dto: UpdateProfileDto) {

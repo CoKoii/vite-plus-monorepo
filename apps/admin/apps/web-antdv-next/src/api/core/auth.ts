@@ -10,11 +10,18 @@ export namespace AuthApi {
   /** 登录接口返回值 */
   export interface LoginResult {
     accessToken: string;
+    refreshToken: string;
   }
 
-  export interface RefreshTokenResult {
-    data: string;
-    status: number;
+  export interface TokenPair {
+    accessToken: string;
+    refreshToken: string;
+  }
+
+  export interface ApiResponse<T> {
+    code: number;
+    data: T;
+    requestId: string;
   }
 }
 
@@ -28,24 +35,20 @@ export async function loginApi(data: AuthApi.LoginParams) {
 /**
  * 刷新accessToken
  */
-export async function refreshTokenApi() {
-  return baseRequestClient.post<AuthApi.RefreshTokenResult>('/auth/refresh', {
-    withCredentials: true,
-  });
+export async function refreshTokenApi(refreshToken: string) {
+  const response = await baseRequestClient.instance.post<
+    AuthApi.ApiResponse<AuthApi.TokenPair>
+  >('/auth/refresh', { refreshToken });
+  return response.data.data;
 }
 
 /**
  * 退出登录
  */
-export async function logoutApi() {
-  return baseRequestClient.post('/auth/logout', {
-    withCredentials: true,
-  });
-}
-
-/**
- * 获取用户权限码
- */
-export async function getAccessCodesApi() {
-  return requestClient.get<string[]>('/auth/codes');
+export async function logoutApi(refreshToken: string, accessToken: string) {
+  await baseRequestClient.instance.post<AuthApi.ApiResponse<null>>(
+    '/auth/logout',
+    { refreshToken },
+    { headers: { Authorization: `Bearer ${accessToken}` } },
+  );
 }

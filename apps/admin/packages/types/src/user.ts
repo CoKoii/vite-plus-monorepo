@@ -1,4 +1,4 @@
-import type { BasicUserInfo } from '@vben-core/typings';
+import type { BasicUserInfo } from "@vben-core/typings";
 
 /** 用户信息 */
 interface UserInfo extends BasicUserInfo {
@@ -15,6 +15,8 @@ interface UserInfo extends BasicUserInfo {
    * accessToken
    */
   token: string;
+
+  permissions: string[];
 }
 
 export type { UserInfo };

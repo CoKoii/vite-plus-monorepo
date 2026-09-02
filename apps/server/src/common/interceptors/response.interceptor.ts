@@ -13,7 +13,7 @@ export class ResponseInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest<{ id: string }>();
     return next.handle().pipe(
       map((data) => ({
-        code: "SUCCESS",
+        code: 0,
         requestId: request.id,
         data,
       })),
