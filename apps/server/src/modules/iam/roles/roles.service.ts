@@ -62,7 +62,8 @@ export class RolesService {
     if (dto.permissionIds?.length) {
       role.permissions = await this.findPermissionsOrThrow(dto.permissionIds);
     }
-    return this.roleRepository.save(role);
+    await this.roleRepository.save(role);
+    return "创建成功";
   }
 
   async update(id: number, dto: UpdateRoleDto) {
@@ -82,13 +83,13 @@ export class RolesService {
     }
     if (dto.status !== undefined) role.status = dto.status;
 
-    const saved = await this.roleRepository.save(role);
+    await this.roleRepository.save(role);
 
     // 影响授权的字段（status/permissions）变更 → 角色版本号 +1
     if ((dto.status !== undefined && dto.status !== oldStatus) || dto.permissionIds !== undefined) {
       await this.authorizationService.incrementRoleVersion(id);
     }
-    return saved;
+    return "更新成功";
   }
 
   /** 删除角色。已分配用户的角色由数据库 FK 约束拒绝，不会级联删除关联 */
@@ -96,5 +97,6 @@ export class RolesService {
     const result = await this.roleRepository.delete(id);
     if (result.affected === 0) throw new NotFoundException("角色不存在");
     await this.authorizationService.incrementRoleVersion(id);
+    return "删除成功";
   }
 }

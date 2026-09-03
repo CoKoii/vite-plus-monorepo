@@ -40,8 +40,9 @@ export class PermissionsService {
     return permission;
   }
 
-  create(dto: CreatePermissionDto) {
-    return this.permissionRepository.save(this.permissionRepository.create(dto));
+  async create(dto: CreatePermissionDto) {
+    await this.permissionRepository.save(this.permissionRepository.create(dto));
+    return "创建成功";
   }
 
   async update(id: number, dto: UpdatePermissionDto) {
@@ -50,7 +51,7 @@ export class PermissionsService {
 
     const oldStatus = permission.status;
     Object.assign(permission, dto);
-    const saved = await this.permissionRepository.save(permission);
+    await this.permissionRepository.save(permission);
 
     // 状态变更（启用/禁用）→ 所有包含该权限的角色版本号 +1
     if (dto.status !== undefined && dto.status !== oldStatus) {
@@ -59,7 +60,7 @@ export class PermissionsService {
       });
       await Promise.all(roles.map((r) => this.authorizationService.incrementRoleVersion(r.id)));
     }
-    return saved;
+    return "更新成功";
   }
 
   async delete(id: number) {
@@ -72,5 +73,6 @@ export class PermissionsService {
     });
     await this.permissionRepository.remove(permission);
     await Promise.all(roles.map((r) => this.authorizationService.incrementRoleVersion(r.id)));
+    return "删除成功";
   }
 }
