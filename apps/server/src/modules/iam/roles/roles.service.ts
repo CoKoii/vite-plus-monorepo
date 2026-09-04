@@ -1,9 +1,13 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { In, QueryFailedError, Repository } from "typeorm";
 
 import { PaginatedResult, PaginationQuery } from "../../../common/dto/pagination.dto";
-import { ResourceConflictException } from "../../../common/errors/business.exception";
+import {
+  ResourceConflictException,
+  ResourceNotFoundException,
+  ValidationException,
+} from "../../../common/errors/business.exception";
 import { AuthorizationService } from "../authorization/authorization.service";
 import { Permission } from "../permissions/entities/permission.entity";
 import { CreateRoleDto } from "./dto/create-role.dto";
@@ -26,7 +30,7 @@ export class RolesService {
     if (!ids.length) return [];
     const permissions = await this.permissionRepository.findBy({ id: In(ids) });
     if (permissions.length !== ids.length) {
-      throw new BadRequestException("存在无效的权限 ID");
+      throw new ValidationException("存在无效的权限 ID");
     }
     return permissions;
   }
@@ -50,7 +54,7 @@ export class RolesService {
       where: { id },
       relations: { permissions: true },
     });
-    if (!role) throw new NotFoundException("角色不存在");
+    if (!role) throw new ResourceNotFoundException("角色不存在");
     return role;
   }
 
@@ -81,13 +85,13 @@ export class RolesService {
       where: { id },
       relations: { permissions: true },
     });
-    if (!role) throw new NotFoundException("角色不存在");
+    if (!role) throw new ResourceNotFoundException("角色不存在");
 
     const oldStatus = role.status;
     if (dto.name !== undefined) role.name = dto.name;
     if (dto.description !== undefined) role.description = dto.description;
     if (dto.level !== undefined) {
-      if (role.isSystem) throw new BadRequestException("系统角色等级不可修改");
+      if (role.isSystem) throw new ValidationException("系统角色等级不可修改");
       role.level = dto.level;
     }
     if (dto.permissionIds !== undefined) {
@@ -97,7 +101,7 @@ export class RolesService {
     }
     if (dto.status !== undefined) {
       if (role.code === "super_admin" && dto.status === 0) {
-        throw new BadRequestException("超级管理员角色不可禁用");
+        throw new ValidationException("超级管理员角色不可禁用");
       }
       role.status = dto.status;
     }
@@ -114,11 +118,11 @@ export class RolesService {
   /** 软删除角色，保留历史关联和审计意义。 */
   async delete(id: number) {
     const role = await this.roleRepository.findOne({ where: { id } });
-    if (!role) throw new NotFoundException("角色不存在");
-    if (role.isSystem) throw new BadRequestException("系统角色不可删除");
+    if (!role) throw new ResourceNotFoundException("角色不存在");
+    if (role.isSystem) throw new ValidationException("系统角色不可删除");
 
     const result = await this.roleRepository.softDelete(id);
-    if (result.affected === 0) throw new NotFoundException("角色不存在");
+    if (result.affected === 0) throw new ResourceNotFoundException("角色不存在");
     await this.authorizationService.incrementRoleVersion(id);
     return "删除成功";
   }

@@ -59,11 +59,13 @@ export const envValidationSchema = joi.object({
   LOGIN_URL: joi.string().uri().required(),
 
   // 注册验证码：关闭时可直接使用 email + password 注册
-  CAPTCHA_ENABLED: joi.when("MAIL_ENABLED", {
-    is: false,
-    then: joi.valid(false).default(false),
-    otherwise: joi.boolean().default(false),
-  }),
+  CAPTCHA_ENABLED: joi
+    .boolean()
+    .default(false)
+    .when("MAIL_ENABLED", {
+      is: false,
+      then: joi.valid(false),
+    }),
 
   // IAM 默认数据初始化
   BOOTSTRAP_ENABLED: joi.boolean().default(false),

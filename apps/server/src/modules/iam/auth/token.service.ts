@@ -1,5 +1,5 @@
 /** Token 管理服务：签发、校验、轮换 access/refresh token */
-import { randomBytes, createHash } from "node:crypto";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { Inject, Injectable } from "@nestjs/common";
@@ -9,20 +9,25 @@ import type { Cache } from "cache-manager";
 
 import { TokenInvalidException } from "../../../common/errors/business.exception";
 import { parseDuration } from "../../../common/utils/time.util";
+import { REDIS_CLIENT, type RedisClient } from "../../../infrastructure/cache/cache.module";
 import type { User } from "../users/entities/user.entity";
 
 export interface JwtPayload {
   sub: number;
   email: string | null;
+  tokenVersion: number;
 }
 
 export interface TokenPair {
   accessToken: string;
   refreshToken: string;
+  sessionId: string;
 }
 
 interface RefreshTokenRecord {
   userId: number;
+  sessionId: string;
+  deviceId?: string;
 }
 
 @Injectable()
@@ -33,6 +38,8 @@ export class TokenService {
   constructor(
     @Inject(CACHE_MANAGER)
     private readonly cache: Cache,
+    @Inject(REDIS_CLIENT)
+    private readonly redisClient: RedisClient,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {
@@ -41,49 +48,126 @@ export class TokenService {
   }
 
   /** 生成 access token 和 refresh token 对 */
-  async generateTokenPair(user: User): Promise<TokenPair> {
+  async generateTokenPair(
+    user: User,
+    sessionId: string = randomUUID(),
+    deviceId?: string,
+  ): Promise<TokenPair> {
     const [accessToken, refreshToken] = await Promise.all([
       this.generateAccessToken(user),
-      this.generateRefreshToken(user),
+      this.generateRefreshToken(user, sessionId, deviceId),
     ]);
-    return { accessToken, refreshToken };
+    return { accessToken, refreshToken, sessionId };
   }
 
   /** 签发 JWT access token */
   private async generateAccessToken(user: User): Promise<string> {
-    return this.jwtService.signAsync({ sub: user.id, email: user.email } satisfies JwtPayload, {
-      expiresIn: this.accessExpiresSec,
-    });
+    return this.jwtService.signAsync(
+      { sub: user.id, email: user.email, tokenVersion: user.tokenVersion } satisfies JwtPayload,
+      {
+        expiresIn: this.accessExpiresSec,
+      },
+    );
   }
 
   /** 生成随机 refresh token，SHA256 哈希后存入 Redis */
-  private async generateRefreshToken(user: User): Promise<string> {
+  private async generateRefreshToken(
+    user: User,
+    sessionId: string,
+    deviceId?: string,
+  ): Promise<string> {
     const raw = randomBytes(48).toString("base64url");
     const hash = this.hashToken(raw);
-    await this.cache.set(
-      `rt:${hash}`,
-      JSON.stringify({ userId: user.id } satisfies RefreshTokenRecord),
-      this.refreshExpiresSec * 1000,
-    );
+    const record = { userId: user.id, sessionId, deviceId } satisfies RefreshTokenRecord;
+    await this.cache.set(`rt:${hash}`, JSON.stringify(record), this.refreshExpiresSec * 1000);
+    await this.cache.set(`auth:session:${sessionId}`, hash, this.refreshExpiresSec * 1000);
+    await this.redisClient.sAdd(`auth:sessions:${user.id}`, sessionId);
     return raw;
   }
 
-  /** 校验 refresh token 并返回用户 ID */
-  async resolveRefreshToken(raw: string): Promise<number> {
+  /** 校验 refresh token 并返回会话信息 */
+  async resolveRefreshToken(raw: string): Promise<RefreshTokenRecord> {
     const cached = await this.cache.get<string>(`rt:${this.hashToken(raw)}`);
-    if (!cached) throw new TokenInvalidException();
-    return (JSON.parse(cached) as RefreshTokenRecord).userId;
+    return this.parseRefreshToken(cached ?? null);
   }
 
   /** 轮换 refresh token：旧 token 失效，生成新 token 对 */
-  async rotateRefreshToken(oldRaw: string, user: User): Promise<TokenPair> {
-    await this.cache.del(`rt:${this.hashToken(oldRaw)}`);
-    return this.generateTokenPair(user);
+  async rotateRefreshToken(
+    oldRaw: string,
+    user: User,
+    sessionId: string,
+    deviceId?: string,
+  ): Promise<TokenPair> {
+    const hash = this.hashToken(oldRaw);
+    const record = this.parseRefreshToken(
+      this.unwrapCacheValue(await this.redisClient.getDel(`rt:${hash}`)),
+    );
+    if (record.userId !== user.id || record.sessionId !== sessionId) {
+      throw new TokenInvalidException();
+    }
+    await this.cache.del(`auth:session:${sessionId}`);
+    return this.generateTokenPair(user, sessionId, deviceId ?? record.deviceId);
   }
 
   /** 删除 refresh token */
   async revokeRefreshToken(raw: string): Promise<void> {
-    await this.cache.del(`rt:${this.hashToken(raw)}`);
+    const record = this.parseRefreshTokenOrNull(
+      this.unwrapCacheValue(await this.redisClient.getDel(`rt:${this.hashToken(raw)}`)),
+    );
+    if (!record) return;
+    await Promise.all([
+      this.cache.del(`auth:session:${record.sessionId}`),
+      this.redisClient.sRem(`auth:sessions:${record.userId}`, record.sessionId),
+    ]);
+  }
+
+  /** 撤销用户的全部设备会话。 */
+  async revokeAllSessions(userId: number): Promise<void> {
+    const sessionsKey = `auth:sessions:${userId}`;
+    const sessionIds = await this.redisClient.sMembers(sessionsKey);
+    await this.cache.del(sessionsKey);
+    if (!sessionIds.length) return;
+
+    const sessionKeys = sessionIds.map((id) => `auth:session:${id}`);
+    const hashes = (await this.redisClient.mGet(sessionKeys)).map((value) =>
+      this.unwrapCacheValue(value),
+    );
+    const keys = [
+      ...sessionKeys,
+      ...hashes.filter((hash): hash is string => hash !== null).map((hash) => `rt:${hash}`),
+    ];
+    await Promise.all(keys.map((key) => this.cache.del(key)));
+  }
+
+  private parseRefreshToken(cached: string | null): RefreshTokenRecord {
+    const record = this.parseRefreshTokenOrNull(cached);
+    if (!record) throw new TokenInvalidException();
+    return record;
+  }
+
+  private parseRefreshTokenOrNull(cached: string | null): RefreshTokenRecord | null {
+    if (!cached) return null;
+    try {
+      const record = JSON.parse(cached) as Partial<RefreshTokenRecord>;
+      if (typeof record.userId !== "number" || typeof record.sessionId !== "string") return null;
+      return record as RefreshTokenRecord;
+    } catch {
+      return null;
+    }
+  }
+
+  /** Keyv Redis stores cache values inside a value/expires envelope. */
+  private unwrapCacheValue(cached: string | null): string | null {
+    if (cached === null) return null;
+    try {
+      const envelope = JSON.parse(cached) as { value?: unknown };
+      if (Object.prototype.hasOwnProperty.call(envelope, "value")) {
+        return typeof envelope.value === "string" ? envelope.value : JSON.stringify(envelope.value);
+      }
+    } catch {
+      // Raw Redis values are also accepted for compatibility.
+    }
+    return cached;
   }
 
   /** SHA256 哈希，避免明文存 Redis */

@@ -1,8 +1,12 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { In, Repository } from "typeorm";
 
 import { PaginatedResult, PaginationQuery } from "../../../common/dto/pagination.dto";
+import {
+  ResourceNotFoundException,
+  ValidationException,
+} from "../../../common/errors/business.exception";
 import { AuthorizationService } from "../authorization/authorization.service";
 import { Role } from "../roles/entities/role.entity";
 import { User } from "./entities/user.entity";
@@ -26,8 +30,22 @@ export class UsersService {
     return qb.getOne();
   }
 
-  findById(id: number) {
-    return this.userRepository.findOne({ where: { id } });
+  findById(id: number, selectPassword = false) {
+    const qb = this.userRepository.createQueryBuilder("user").where("user.id = :id", { id });
+    if (selectPassword) qb.addSelect("user.passwordHash");
+    return qb.getOne();
+  }
+
+  async updatePassword(userId: number, passwordHash: string) {
+    const user = await this.findById(userId, true);
+    if (!user) throw new ResourceNotFoundException("用户不存在");
+    user.passwordHash = passwordHash;
+    user.tokenVersion += 1;
+    return this.userRepository.save(user);
+  }
+
+  async incrementTokenVersion(userId: number) {
+    await this.userRepository.increment({ id: userId }, "tokenVersion", 1);
   }
 
   create(email: string, passwordHash: string) {
@@ -57,16 +75,16 @@ export class UsersService {
       where: { id: targetUserId },
       relations: { roles: true },
     });
-    if (!user) throw new NotFoundException("用户不存在");
+    if (!user) throw new ResourceNotFoundException("用户不存在");
 
     // 校验所有 roleId 存在且为启用状态
     const roles = roleIds.length ? await this.roleRepository.findBy({ id: In(roleIds) }) : [];
     if (roles.length !== roleIds.length) {
-      throw new BadRequestException("存在无效的角色 ID");
+      throw new ValidationException("存在无效的角色 ID");
     }
     const inactive = roles.filter((r) => r.status !== 1);
     if (inactive.length > 0) {
-      throw new BadRequestException(
+      throw new ValidationException(
         `角色 [${inactive.map((r) => r.name).join(", ")}] 已禁用，无法分配`,
       );
     }

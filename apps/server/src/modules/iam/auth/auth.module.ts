@@ -5,6 +5,7 @@ import { JwtModule } from "@nestjs/jwt";
 import { PassportModule } from "@nestjs/passport";
 
 import { parseDuration } from "../../../common/utils/time.util";
+import { CacheModule } from "../../../infrastructure/cache/cache.module";
 import { AuthorizationModule } from "../authorization/authorization.module";
 import { UsersModule } from "../users/users.module";
 import { AuthController } from "./auth.controller";
@@ -18,6 +19,7 @@ import { TokenService } from "./token.service";
 @Module({
   imports: [
     UsersModule,
+    CacheModule,
     AuthorizationModule,
     PassportModule.register({ defaultStrategy: "jwt" }),
     JwtModule.registerAsync({

@@ -1,8 +1,12 @@
 /** 全局 JWT 守卫，标记 @Public() 的接口跳过校验 */
-import { type ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
+import { type ExecutionContext, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { AuthGuard } from "@nestjs/passport";
 
+import {
+  AuthenticationRequiredException,
+  BusinessException,
+} from "../../../../common/errors/business.exception";
 import { IS_PUBLIC_KEY } from "../decorators/public.decorator";
 
 /** 全局 JWT 守卫，标记 @Public() 的接口跳过校验 */
@@ -22,9 +26,10 @@ export class JwtAuthGuard extends AuthGuard("jwt") {
   }
 
   /** JWT 校验失败时统一返回 401 */
-  override handleRequest(err: Error | null, user: any, _info: any) {
+  override handleRequest(err: unknown, user: any, _info: any) {
     if (err || !user) {
-      throw err || new UnauthorizedException("请先登录");
+      if (err instanceof BusinessException) throw err;
+      throw new AuthenticationRequiredException();
     }
     return user;
   }

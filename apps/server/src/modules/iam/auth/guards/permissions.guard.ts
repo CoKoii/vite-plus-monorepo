@@ -1,6 +1,10 @@
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 
+import {
+  AuthenticationRequiredException,
+  PermissionDeniedException,
+} from "../../../../common/errors/business.exception";
 import { AuthorizationService } from "../../authorization/authorization.service";
 import { PERMISSIONS_KEY } from "../decorators/permissions.decorator";
 
@@ -20,8 +24,11 @@ export class PermissionsGuard implements CanActivate {
     if (!required?.length) return true;
 
     const { user } = context.switchToHttp().getRequest<{ user?: { id: number } }>();
-    if (!user) return false;
+    if (!user) throw new AuthenticationRequiredException();
 
-    return this.authorizationService.hasPermissions(user.id, required);
+    if (!(await this.authorizationService.hasPermissions(user.id, required))) {
+      throw new PermissionDeniedException();
+    }
+    return true;
   }
 }

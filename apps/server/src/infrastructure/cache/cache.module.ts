@@ -9,8 +9,12 @@ import { InfrastructureUnavailableException } from "../../common/errors/business
 export const REDIS_CLIENT = Symbol("REDIS_CLIENT");
 
 export interface RedisClient {
+  getDel(key: string): Promise<string | null>;
   mGet(keys: string[]): Promise<(string | null)[]>;
   incr(key: string): Promise<number>;
+  sAdd(key: string, member: string): Promise<number>;
+  sMembers(key: string): Promise<string[]>;
+  sRem(key: string, member: string): Promise<number>;
 }
 
 @Module({

@@ -16,6 +16,9 @@ export class User extends BaseEntity {
   @Column({ comment: "状态", default: 1 })
   status!: number;
 
+  @Column({ comment: "认证版本，修改密码或退出全部设备时递增", default: 0 })
+  tokenVersion!: number;
+
   @Column({ type: "timestamptz", nullable: true, comment: "邮箱验证时间" })
   emailVerifiedAt!: Date | null;
 

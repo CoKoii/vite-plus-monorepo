@@ -1,9 +1,12 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { QueryFailedError, Repository } from "typeorm";
 
 import { PaginatedResult, PaginationQuery } from "../../../common/dto/pagination.dto";
-import { ResourceConflictException } from "../../../common/errors/business.exception";
+import {
+  ResourceConflictException,
+  ResourceNotFoundException,
+} from "../../../common/errors/business.exception";
 import { AuthorizationService } from "../authorization/authorization.service";
 import { Role } from "../roles/entities/role.entity";
 import { CreatePermissionDto } from "./dto/create-permission.dto";
@@ -37,7 +40,7 @@ export class PermissionsService {
 
   async findById(id: number) {
     const permission = await this.permissionRepository.findOne({ where: { id } });
-    if (!permission) throw new NotFoundException("权限不存在");
+    if (!permission) throw new ResourceNotFoundException("权限不存在");
     return permission;
   }
 
@@ -55,7 +58,7 @@ export class PermissionsService {
 
   async update(id: number, dto: UpdatePermissionDto) {
     const permission = await this.permissionRepository.findOne({ where: { id } });
-    if (!permission) throw new NotFoundException("权限不存在");
+    if (!permission) throw new ResourceNotFoundException("权限不存在");
 
     const oldStatus = permission.status;
     if (dto.name !== undefined) permission.name = dto.name;
@@ -75,7 +78,7 @@ export class PermissionsService {
 
   async delete(id: number) {
     const permission = await this.permissionRepository.findOne({ where: { id } });
-    if (!permission) throw new NotFoundException("权限不存在");
+    if (!permission) throw new ResourceNotFoundException("权限不存在");
 
     // 先找出关联角色递增版本号，再删除权限
     const roles = await this.roleRepository.find({

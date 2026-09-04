@@ -29,6 +29,19 @@ export class MailService {
     });
   }
 
+  sendPasswordVerificationCode(
+    to: string,
+    code: string,
+    loginUrl: string,
+  ): Promise<SentMessageInfo> {
+    this.assertEnabled();
+    return this.mailerService.sendMail({
+      to,
+      subject: "【vite-plus-monorepo】密码操作验证码",
+      html: renderVerificationCode({ code, loginUrl }),
+    });
+  }
+
   sendWelcome(to: string, username: string, loginUrl: string): Promise<SentMessageInfo> {
     this.assertEnabled();
     return this.mailerService.sendMail({

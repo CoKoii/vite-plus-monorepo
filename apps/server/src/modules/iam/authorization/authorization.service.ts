@@ -1,9 +1,10 @@
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
-import { ForbiddenException, Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import type { Cache } from "cache-manager";
 import { Repository } from "typeorm";
 
+import { PermissionDeniedException } from "../../../common/errors/business.exception";
 import { REDIS_CLIENT, type RedisClient } from "../../../infrastructure/cache/cache.module";
 import { Role } from "../roles/entities/role.entity";
 import { User } from "../users/entities/user.entity";
@@ -152,8 +153,8 @@ export class AuthorizationService {
       where: { id: actorId },
       relations: { roles: true },
     });
-    if (!actor) throw new ForbiddenException("无权分配角色");
-    if (actor.id === targetUser.id) throw new ForbiddenException("不能修改自己的角色");
+    if (!actor) throw new PermissionDeniedException("无权分配角色");
+    if (actor.id === targetUser.id) throw new PermissionDeniedException("不能修改自己的角色");
 
     const actorLevel = Math.max(
       ...actor.roles.filter((role) => role.status === 1).map((role) => role.level),
@@ -163,7 +164,7 @@ export class AuthorizationService {
     const requestedLevel = Math.max(...requestedRoles.map((role) => role.level), -1);
 
     if (actorLevel <= targetLevel || requestedLevel >= actorLevel) {
-      throw new ForbiddenException("不能管理同级或更高等级的角色");
+      throw new PermissionDeniedException("不能管理同级或更高等级的角色");
     }
   }
 }

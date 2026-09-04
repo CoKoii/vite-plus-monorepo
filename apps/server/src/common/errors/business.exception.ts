@@ -41,6 +41,36 @@ export class InfrastructureUnavailableException extends BusinessException {
   }
 }
 
+export class FeatureDisabledException extends BusinessException {
+  constructor(message = "当前功能未启用") {
+    super(ErrorCode.FEATURE_DISABLED, message, HttpStatus.BAD_REQUEST);
+  }
+}
+
+export class ValidationException extends BusinessException {
+  constructor(message = "请求参数无效") {
+    super(ErrorCode.VALIDATION_ERROR, message, HttpStatus.BAD_REQUEST);
+  }
+}
+
+export class ResourceNotFoundException extends BusinessException {
+  constructor(message = "请求的资源不存在") {
+    super(ErrorCode.NOT_FOUND, message, HttpStatus.NOT_FOUND);
+  }
+}
+
+export class AuthenticationRequiredException extends BusinessException {
+  constructor(message = "请先登录") {
+    super(ErrorCode.UNAUTHORIZED, message, HttpStatus.UNAUTHORIZED);
+  }
+}
+
+export class PermissionDeniedException extends BusinessException {
+  constructor(message = "没有权限执行该操作") {
+    super(ErrorCode.FORBIDDEN, message, HttpStatus.FORBIDDEN);
+  }
+}
+
 export class ConfigurationException extends BusinessException {
   constructor(message = "系统配置无效") {
     super(ErrorCode.INTERNAL_ERROR, message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -80,5 +110,23 @@ export class AccountDisabledException extends BusinessException {
 export class TokenInvalidException extends BusinessException {
   constructor(message = "Token 无效，请重新登录") {
     super(ErrorCode.AUTH_TOKEN_INVALID, message, HttpStatus.UNAUTHORIZED);
+  }
+}
+
+export class PasswordCodeInvalidException extends BusinessException {
+  constructor(message = "密码验证码错误或已过期") {
+    super(ErrorCode.AUTH_PASSWORD_CODE_INVALID, message, HttpStatus.BAD_REQUEST);
+  }
+}
+
+export class EmailRequiredException extends BusinessException {
+  constructor(message = "账户未绑定邮箱") {
+    super(ErrorCode.AUTH_EMAIL_REQUIRED, message, HttpStatus.BAD_REQUEST);
+  }
+}
+
+export class PasswordUnchangedException extends BusinessException {
+  constructor(message = "新密码不能与当前密码相同") {
+    super(ErrorCode.AUTH_PASSWORD_UNCHANGED, message, HttpStatus.BAD_REQUEST);
   }
 }

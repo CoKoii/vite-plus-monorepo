@@ -16,6 +16,8 @@ export enum ErrorCode {
   TOO_MANY_REQUESTS = "TOO_MANY_REQUESTS",
   /** 依赖服务暂时不可用 */
   SERVICE_UNAVAILABLE = "SERVICE_UNAVAILABLE",
+  /** 当前功能未启用 */
+  FEATURE_DISABLED = "FEATURE_DISABLED",
   /** 邮件发送失败 */
   MAIL_SEND_FAILED = "MAIL_SEND_FAILED",
   /** 服务器内部错误 */
@@ -41,4 +43,10 @@ export enum ErrorCode {
   AUTH_ACCOUNT_DISABLED = "AUTH_ACCOUNT_DISABLED",
   /** Token 已过期，需重新登录 */
   AUTH_TOKEN_EXPIRED = "AUTH_TOKEN_EXPIRED",
+  /** 密码验证码错误或已过期 */
+  AUTH_PASSWORD_CODE_INVALID = "AUTH_PASSWORD_CODE_INVALID",
+  /** 账户未绑定邮箱 */
+  AUTH_EMAIL_REQUIRED = "AUTH_EMAIL_REQUIRED",
+  /** 新密码不能与旧密码相同 */
+  AUTH_PASSWORD_UNCHANGED = "AUTH_PASSWORD_UNCHANGED",
 }
