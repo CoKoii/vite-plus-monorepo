@@ -34,7 +34,7 @@ export const layout = handlebars.compile(`<!DOCTYPE html>
           <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width: 100%; max-width: 600px; background-color: #ffffff; border-radius: 8px; overflow: hidden;">
             <tr>
               <td style="padding: 24px 32px; background-color: #2563eb; color: #ffffff; font-size: 18px; font-weight: 600;">
-                vite-plus-monorepo
+                {{projectName}}
               </td>
             </tr>
             <tr>
@@ -56,6 +56,6 @@ export const layout = handlebars.compile(`<!DOCTYPE html>
 
 // 把模板正文嵌入公共布局。layout 用 {{{body}}}（三花括号，不转义），
 // 因此必须把渲染结果作为 { body } 传入，而不是直接当上下文，否则正文为空。
-export function render(body: string): string {
-  return layout({ body });
+export function render(body: string, projectName: string): string {
+  return layout({ body, projectName });
 }

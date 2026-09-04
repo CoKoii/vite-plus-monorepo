@@ -29,7 +29,7 @@ export class HealthService {
     ]);
     if (redis) await this.cache.del("health:ping");
 
-    if (!db || !redis) throw new InfrastructureUnavailableException("系统服务异常");
-    return "系统服务一切正常";
+    if (!db || !redis) throw new InfrastructureUnavailableException("依赖服务暂时不可用");
+    return "服务运行正常";
   }
 }

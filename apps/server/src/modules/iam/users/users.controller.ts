@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Patch, Query } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Query } from "@nestjs/common";
 
 import { PaginationQuery } from "../../../common/dto/pagination.dto";
+import { ParseIdPipe } from "../../../common/pipes/parse-id.pipe";
 import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import { Permissions } from "../auth/decorators/permissions.decorator";
 import { UpdateUserRolesDto } from "./dto/update-user-roles.dto";
@@ -20,15 +21,15 @@ export class UsersController {
 
   @Permissions("iam:user:read")
   @Get(":id")
-  findById(@Param("id", ParseIntPipe) id: number) {
-    return this.usersService.findById(id);
+  findById(@Param("id", ParseIdPipe) id: number) {
+    return this.usersService.findByIdOrThrow(id);
   }
 
   @Permissions("iam:user:role:assign")
   @Patch(":id/roles")
   updateRoles(
     @CurrentUser() actor: User,
-    @Param("id", ParseIntPipe) id: number,
+    @Param("id", ParseIdPipe) id: number,
     @Body() dto: UpdateUserRolesDto,
   ) {
     return this.usersService.updateRoles(actor.id, id, dto.roleIds);

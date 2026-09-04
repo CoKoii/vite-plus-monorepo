@@ -21,13 +21,11 @@ export interface JwtPayload {
 export interface TokenPair {
   accessToken: string;
   refreshToken: string;
-  sessionId: string;
 }
 
 interface RefreshTokenRecord {
   userId: number;
   sessionId: string;
-  deviceId?: string;
 }
 
 @Injectable()
@@ -48,16 +46,12 @@ export class TokenService {
   }
 
   /** 生成 access token 和 refresh token 对 */
-  async generateTokenPair(
-    user: User,
-    sessionId: string = randomUUID(),
-    deviceId?: string,
-  ): Promise<TokenPair> {
+  async generateTokenPair(user: User, sessionId: string = randomUUID()): Promise<TokenPair> {
     const [accessToken, refreshToken] = await Promise.all([
       this.generateAccessToken(user),
-      this.generateRefreshToken(user, sessionId, deviceId),
+      this.generateRefreshToken(user, sessionId),
     ]);
-    return { accessToken, refreshToken, sessionId };
+    return { accessToken, refreshToken };
   }
 
   /** 签发 JWT access token */
@@ -71,14 +65,10 @@ export class TokenService {
   }
 
   /** 生成随机 refresh token，SHA256 哈希后存入 Redis */
-  private async generateRefreshToken(
-    user: User,
-    sessionId: string,
-    deviceId?: string,
-  ): Promise<string> {
+  private async generateRefreshToken(user: User, sessionId: string): Promise<string> {
     const raw = randomBytes(48).toString("base64url");
     const hash = this.hashToken(raw);
-    const record = { userId: user.id, sessionId, deviceId } satisfies RefreshTokenRecord;
+    const record = { userId: user.id, sessionId } satisfies RefreshTokenRecord;
     await this.cache.set(`rt:${hash}`, JSON.stringify(record), this.refreshExpiresSec * 1000);
     await this.cache.set(`auth:session:${sessionId}`, hash, this.refreshExpiresSec * 1000);
     await this.redisClient.sAdd(`auth:sessions:${user.id}`, sessionId);
@@ -92,12 +82,7 @@ export class TokenService {
   }
 
   /** 轮换 refresh token：旧 token 失效，生成新 token 对 */
-  async rotateRefreshToken(
-    oldRaw: string,
-    user: User,
-    sessionId: string,
-    deviceId?: string,
-  ): Promise<TokenPair> {
+  async rotateRefreshToken(oldRaw: string, user: User, sessionId: string): Promise<TokenPair> {
     const hash = this.hashToken(oldRaw);
     const record = this.parseRefreshToken(
       this.unwrapCacheValue(await this.redisClient.getDel(`rt:${hash}`)),
@@ -106,7 +91,7 @@ export class TokenService {
       throw new TokenInvalidException();
     }
     await this.cache.del(`auth:session:${sessionId}`);
-    return this.generateTokenPair(user, sessionId, deviceId ?? record.deviceId);
+    return this.generateTokenPair(user, sessionId);
   }
 
   /** 删除 refresh token */

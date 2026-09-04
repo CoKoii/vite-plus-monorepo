@@ -36,6 +36,12 @@ export class UsersService {
     return qb.getOne();
   }
 
+  async findByIdOrThrow(id: number) {
+    const user = await this.findById(id);
+    if (!user) throw new ResourceNotFoundException("用户不存在");
+    return user;
+  }
+
   async updatePassword(userId: number, passwordHash: string) {
     const user = await this.findById(userId, true);
     if (!user) throw new ResourceNotFoundException("用户不存在");
@@ -80,12 +86,12 @@ export class UsersService {
     // 校验所有 roleId 存在且为启用状态
     const roles = roleIds.length ? await this.roleRepository.findBy({ id: In(roleIds) }) : [];
     if (roles.length !== roleIds.length) {
-      throw new ValidationException("存在无效的角色 ID");
+      throw new ValidationException("角色 ID 不存在或无效");
     }
     const inactive = roles.filter((r) => r.status !== 1);
     if (inactive.length > 0) {
       throw new ValidationException(
-        `角色 [${inactive.map((r) => r.name).join(", ")}] 已禁用，无法分配`,
+        `以下角色已禁用，无法分配：${inactive.map((r) => r.name).join("、")}`,
       );
     }
 

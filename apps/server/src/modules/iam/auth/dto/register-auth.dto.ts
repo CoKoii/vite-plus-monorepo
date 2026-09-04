@@ -22,9 +22,4 @@ export class RegisterAuthDto {
   @Length(6, 6)
   @Matches(/^\d{6}$/)
   captcha?: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  deviceId?: string;
 }

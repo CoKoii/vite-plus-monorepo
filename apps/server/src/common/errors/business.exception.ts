@@ -108,7 +108,7 @@ export class AccountDisabledException extends BusinessException {
 }
 
 export class TokenInvalidException extends BusinessException {
-  constructor(message = "Token 无效，请重新登录") {
+  constructor(message = "登录凭证无效或已失效，请重新登录") {
     super(ErrorCode.AUTH_TOKEN_INVALID, message, HttpStatus.UNAUTHORIZED);
   }
 }

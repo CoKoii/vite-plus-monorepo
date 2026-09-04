@@ -9,10 +9,14 @@ type SentMessageInfo = Awaited<ReturnType<MailerService["sendMail"]>>;
 
 @Injectable()
 export class MailService {
+  private readonly projectName: string;
+
   constructor(
     private readonly mailerService: MailerService,
     private readonly configService: ConfigService,
-  ) {}
+  ) {
+    this.projectName = this.configService.getOrThrow<string>("PROJECT_NAME");
+  }
 
   private assertEnabled() {
     if (!this.configService.get<boolean>("MAIL_ENABLED", false)) {
@@ -24,21 +28,20 @@ export class MailService {
     this.assertEnabled();
     return this.mailerService.sendMail({
       to,
-      subject: "【vite-plus-monorepo】验证码",
-      html: renderVerificationCode({ code, loginUrl }),
+      subject: `【${this.projectName}】注册验证码`,
+      html: renderVerificationCode(
+        { code, actionUrl: loginUrl, actionLabel: "前往登录" },
+        this.projectName,
+      ),
     });
   }
 
-  sendPasswordVerificationCode(
-    to: string,
-    code: string,
-    loginUrl: string,
-  ): Promise<SentMessageInfo> {
+  sendPasswordVerificationCode(to: string, code: string): Promise<SentMessageInfo> {
     this.assertEnabled();
     return this.mailerService.sendMail({
       to,
-      subject: "【vite-plus-monorepo】密码操作验证码",
-      html: renderVerificationCode({ code, loginUrl }),
+      subject: `【${this.projectName}】密码验证码`,
+      html: renderVerificationCode({ code }, this.projectName),
     });
   }
 
@@ -46,8 +49,8 @@ export class MailService {
     this.assertEnabled();
     return this.mailerService.sendMail({
       to,
-      subject: "【vite-plus-monorepo】欢迎加入",
-      html: renderWelcome({ username, loginUrl }),
+      subject: `【${this.projectName}】欢迎加入`,
+      html: renderWelcome({ username, loginUrl }, this.projectName),
     });
   }
 
@@ -55,8 +58,8 @@ export class MailService {
     this.assertEnabled();
     return this.mailerService.sendMail({
       to,
-      subject: "【vite-plus-monorepo】重置密码",
-      html: renderPasswordReset({ resetUrl }),
+      subject: `【${this.projectName}】重置密码`,
+      html: renderPasswordReset({ resetUrl }, this.projectName),
     });
   }
 }

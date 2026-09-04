@@ -1,16 +1,7 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  ParseIntPipe,
-  Patch,
-  Post,
-  Query,
-} from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
 
 import { PaginationQuery } from "../../../common/dto/pagination.dto";
+import { ParseIdPipe } from "../../../common/pipes/parse-id.pipe";
 import { Permissions } from "../auth/decorators/permissions.decorator";
 import { Roles } from "../auth/decorators/roles.decorator";
 import { CreateRoleDto } from "./dto/create-role.dto";
@@ -30,7 +21,7 @@ export class RolesController {
 
   @Permissions("iam:role:read")
   @Get(":id")
-  findById(@Param("id", ParseIntPipe) id: number) {
+  findById(@Param("id", ParseIdPipe) id: number) {
     return this.rolesService.findById(id);
   }
 
@@ -44,14 +35,14 @@ export class RolesController {
   @Roles("super_admin")
   @Permissions("iam:role:update")
   @Patch(":id")
-  update(@Param("id", ParseIntPipe) id: number, @Body() dto: UpdateRoleDto) {
+  update(@Param("id", ParseIdPipe) id: number, @Body() dto: UpdateRoleDto) {
     return this.rolesService.update(id, dto);
   }
 
   @Roles("super_admin")
   @Permissions("iam:role:delete")
   @Delete(":id")
-  delete(@Param("id", ParseIntPipe) id: number) {
+  delete(@Param("id", ParseIdPipe) id: number) {
     return this.rolesService.delete(id);
   }
 }

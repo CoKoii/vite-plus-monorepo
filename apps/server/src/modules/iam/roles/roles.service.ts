@@ -30,7 +30,7 @@ export class RolesService {
     if (!ids.length) return [];
     const permissions = await this.permissionRepository.findBy({ id: In(ids) });
     if (permissions.length !== ids.length) {
-      throw new ValidationException("存在无效的权限 ID");
+      throw new ValidationException("权限 ID 不存在或无效");
     }
     return permissions;
   }
@@ -77,7 +77,7 @@ export class RolesService {
       }
       throw error;
     }
-    return "创建成功";
+    return "角色创建成功";
   }
 
   async update(id: number, dto: UpdateRoleDto) {
@@ -112,7 +112,7 @@ export class RolesService {
     if ((dto.status !== undefined && dto.status !== oldStatus) || dto.permissionIds !== undefined) {
       await this.authorizationService.incrementRoleVersion(id);
     }
-    return "更新成功";
+    return "角色更新成功";
   }
 
   /** 软删除角色，保留历史关联和审计意义。 */
@@ -124,6 +124,6 @@ export class RolesService {
     const result = await this.roleRepository.softDelete(id);
     if (result.affected === 0) throw new ResourceNotFoundException("角色不存在");
     await this.authorizationService.incrementRoleVersion(id);
-    return "删除成功";
+    return "角色删除成功";
   }
 }

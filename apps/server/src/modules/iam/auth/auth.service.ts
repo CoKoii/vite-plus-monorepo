@@ -19,7 +19,9 @@ import {
   MailSendFailedException,
   PasswordCodeInvalidException,
   PasswordUnchangedException,
+  ResourceNotFoundException,
   TooManyRequestsException,
+  ValidationException,
 } from "../../../common/errors/business.exception";
 import { MailService } from "../../../infrastructure/mail/mail.service";
 import { Profile } from "../profiles/entities/profile.entity";
@@ -70,7 +72,7 @@ export class AuthService {
       await this.cache.del(`captcha:cooldown:${email}`);
       throw new MailSendFailedException();
     }
-    return "验证码发送成功，请注意查收";
+    return "注册验证码已发送，请查收";
   }
 
   /** 注册账号并创建空资料，事务保证一致性 */
@@ -116,11 +118,11 @@ export class AuthService {
       throw error;
     }
 
-    return this.tokenService.generateTokenPair(user, undefined, dto.deviceId);
+    return this.tokenService.generateTokenPair(user);
   }
 
   /** email + password 登录 */
-  async login(email: string, password: string, deviceId?: string): Promise<TokenPair> {
+  async login(email: string, password: string): Promise<TokenPair> {
     const user = await this.usersService.findByEmail(email, true);
     if (!user || !user.passwordHash) {
       await argon2.hash(password);
@@ -129,7 +131,7 @@ export class AuthService {
     if (!(await argon2.verify(user.passwordHash, password)))
       throw new InvalidCredentialsException();
     if (user.status !== 1) throw new AccountDisabledException();
-    return this.tokenService.generateTokenPair(user, undefined, deviceId);
+    return this.tokenService.generateTokenPair(user);
   }
 
   /** 为已登录用户发送修改密码验证码。 */
@@ -138,7 +140,7 @@ export class AuthService {
     if (!user?.email) throw new EmailRequiredException();
 
     await this.sendPasswordCode(`password:change:${userId}`, user.email);
-    return "密码验证码发送成功，请注意查收";
+    return "修改密码验证码已发送，请查收";
   }
 
   /** 修改密码，并撤销所有旧设备会话。 */
@@ -161,19 +163,24 @@ export class AuthService {
     return this.tokenService.generateTokenPair(updatedUser);
   }
 
-  /** 请求忘记密码验证码，对不存在的邮箱返回相同结果。 */
+  /** 请求忘记密码验证码，直接反馈邮箱和邮件发送结果。 */
   async requestPasswordReset(dto: ForgotPasswordAuthDto) {
     const email = dto.email.trim().toLowerCase();
     const user = await this.usersService.findByEmail(email);
-    if (user?.status === 1) await this.sendPasswordCode(`password:reset:${email}`, email);
-    return "如果账户存在，重置验证码已发送，请注意查收";
+    if (!user) throw new ResourceNotFoundException("该邮箱未注册");
+    if (user.status !== 1) throw new AccountDisabledException();
+
+    await this.sendPasswordCode(`password:reset:${email}`, email);
+    return "密码重置验证码已发送至您的邮箱，请查收";
   }
 
   /** 使用邮箱验证码重置密码，并撤销所有旧设备会话。 */
   async resetPassword(dto: ResetPasswordAuthDto) {
     const email = dto.email.trim().toLowerCase();
     const user = await this.usersService.findByEmail(email, true);
-    if (!user?.passwordHash) throw new PasswordCodeInvalidException();
+    if (!user) throw new ResourceNotFoundException("该邮箱未注册");
+    if (user.status !== 1) throw new AccountDisabledException();
+    if (!user.passwordHash) throw new ValidationException("该账户未设置密码");
     if (await argon2.verify(user.passwordHash, dto.newPassword)) {
       throw new PasswordUnchangedException();
     }
@@ -190,18 +197,13 @@ export class AuthService {
     const user = await this.usersService.findById(session.userId);
     if (!user) throw new InvalidCredentialsException("账户不存在");
     if (user.status !== 1) throw new AccountDisabledException();
-    return this.tokenService.rotateRefreshToken(
-      oldRefreshToken,
-      user,
-      session.sessionId,
-      session.deviceId,
-    );
+    return this.tokenService.rotateRefreshToken(oldRefreshToken, user, session.sessionId);
   }
 
   /** 退出登录 */
   async logout(refreshToken: string): Promise<string> {
     await this.tokenService.revokeRefreshToken(refreshToken);
-    return "退出成功";
+    return "已退出当前会话";
   }
 
   /** 退出当前用户的全部设备。 */
@@ -220,11 +222,7 @@ export class AuthService {
     await this.cache.set(codeKey, code, 5 * 60 * 1000);
     await this.cache.set(cooldownKey, true, 60 * 1000);
     try {
-      await this.mailService.sendPasswordVerificationCode(
-        email,
-        code,
-        this.configService.getOrThrow("LOGIN_URL"),
-      );
+      await this.mailService.sendPasswordVerificationCode(email, code);
     } catch {
       await Promise.all([this.cache.del(codeKey), this.cache.del(cooldownKey)]);
       throw new MailSendFailedException();

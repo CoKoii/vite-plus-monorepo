@@ -38,7 +38,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post("login")
   login(@Body() dto: LoginAuthDto) {
-    return this.authService.login(dto.email, dto.password, dto.deviceId);
+    return this.authService.login(dto.email, dto.password);
   }
 
   @Throttle({ default: { ttl: 60000, limit: 3 } })

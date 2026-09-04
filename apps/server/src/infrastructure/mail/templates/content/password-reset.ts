@@ -5,13 +5,13 @@ interface PasswordResetContext {
 }
 
 const template = handlebars.compile(`<p style="${paragraphStyle}">
-  我们收到了你的密码重置请求。
+  我们收到了您的密码重置请求。
 </p>
 <p style="${paragraphStyle}">
-  点击下方按钮设置新密码，链接 30 分钟内有效：
+  请点击下方按钮设置新密码，链接有效期为 30 分钟：
 </p>
-{{> button label="重设密码" url=resetUrl}}`);
+{{> button label="重置密码" url=resetUrl}}`);
 
-export function renderPasswordReset(context: PasswordResetContext): string {
-  return render(template(context));
+export function renderPasswordReset(context: PasswordResetContext, projectName: string): string {
+  return render(template(context), projectName);
 }

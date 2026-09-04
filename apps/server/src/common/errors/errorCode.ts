@@ -37,7 +37,7 @@ export enum ErrorCode {
   AUTH_CAPTCHA_INVALID = "AUTH_CAPTCHA_INVALID",
   /** 验证码已过期 */
   AUTH_CAPTCHA_EXPIRED = "AUTH_CAPTCHA_EXPIRED",
-  /** Token 无效 */
+  /** 登录凭证无效或已失效 */
   AUTH_TOKEN_INVALID = "AUTH_TOKEN_INVALID",
   /** 账户已被禁用 */
   AUTH_ACCOUNT_DISABLED = "AUTH_ACCOUNT_DISABLED",

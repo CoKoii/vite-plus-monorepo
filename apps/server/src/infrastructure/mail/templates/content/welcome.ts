@@ -3,16 +3,20 @@ import { handlebars, paragraphStyle, render } from "../layout";
 interface WelcomeContext {
   username: string;
   loginUrl: string;
+  projectName: string;
 }
 
 const template = handlebars.compile(`<p style="${paragraphStyle}">
-  你好，{{username}}，
+  您好，{{username}}：
 </p>
 <p style="${paragraphStyle}">
-  欢迎加入 vite-plus-monorepo，祝你使用愉快。如需帮助，随时联系我们。
+  欢迎加入 {{projectName}}，祝您使用愉快。如需帮助，请联系我们。
 </p>
 {{> button label="开始使用" url=loginUrl}}`);
 
-export function renderWelcome(context: WelcomeContext): string {
-  return render(template(context));
+export function renderWelcome(
+  context: Omit<WelcomeContext, "projectName">,
+  projectName: string,
+): string {
+  return render(template({ ...context, projectName }), projectName);
 }

@@ -1,16 +1,7 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  ParseIntPipe,
-  Patch,
-  Post,
-  Query,
-} from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
 
 import { PaginationQuery } from "../../../common/dto/pagination.dto";
+import { ParseIdPipe } from "../../../common/pipes/parse-id.pipe";
 import { Permissions } from "../auth/decorators/permissions.decorator";
 import { Roles } from "../auth/decorators/roles.decorator";
 import { CreatePermissionDto } from "./dto/create-permission.dto";
@@ -30,7 +21,7 @@ export class PermissionsController {
 
   @Permissions("iam:permission:read")
   @Get(":id")
-  findById(@Param("id", ParseIntPipe) id: number) {
+  findById(@Param("id", ParseIdPipe) id: number) {
     return this.permissionsService.findById(id);
   }
 
@@ -44,14 +35,14 @@ export class PermissionsController {
   @Roles("super_admin")
   @Permissions("iam:permission:update")
   @Patch(":id")
-  update(@Param("id", ParseIntPipe) id: number, @Body() dto: UpdatePermissionDto) {
+  update(@Param("id", ParseIdPipe) id: number, @Body() dto: UpdatePermissionDto) {
     return this.permissionsService.update(id, dto);
   }
 
   @Roles("super_admin")
   @Permissions("iam:permission:delete")
   @Delete(":id")
-  delete(@Param("id", ParseIntPipe) id: number) {
+  delete(@Param("id", ParseIdPipe) id: number) {
     return this.permissionsService.delete(id);
   }
 }

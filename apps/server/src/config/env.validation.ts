@@ -3,6 +3,7 @@ import joi from "joi";
 export const envValidationSchema = joi.object({
   // 应用
   NODE_ENV: joi.string().valid("development", "production", "test").default("development"),
+  PROJECT_NAME: joi.string().trim().min(1).required(),
   PORT: joi.number().port().default(3000),
   LOG_LEVEL: joi.string().valid("debug", "info", "warn", "error").default("info"),
   CORS_ORIGIN: joi.when("NODE_ENV", {

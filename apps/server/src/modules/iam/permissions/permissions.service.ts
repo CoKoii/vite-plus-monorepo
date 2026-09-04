@@ -53,7 +53,7 @@ export class PermissionsService {
       }
       throw error;
     }
-    return "创建成功";
+    return "权限创建成功";
   }
 
   async update(id: number, dto: UpdatePermissionDto) {
@@ -73,7 +73,7 @@ export class PermissionsService {
       });
       await Promise.all(roles.map((r) => this.authorizationService.incrementRoleVersion(r.id)));
     }
-    return "更新成功";
+    return "权限更新成功";
   }
 
   async delete(id: number) {
@@ -86,6 +86,6 @@ export class PermissionsService {
     });
     await this.permissionRepository.softRemove(permission);
     await Promise.all(roles.map((r) => this.authorizationService.incrementRoleVersion(r.id)));
-    return "删除成功";
+    return "权限删除成功";
   }
 }
