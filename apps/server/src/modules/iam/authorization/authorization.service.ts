@@ -1,9 +1,11 @@
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
-import { Inject, Injectable } from "@nestjs/common";
+import { ForbiddenException, Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import type { Cache } from "cache-manager";
 import { Repository } from "typeorm";
 
+import { REDIS_CLIENT, type RedisClient } from "../../../infrastructure/cache/cache.module";
+import { Role } from "../roles/entities/role.entity";
 import { User } from "../users/entities/user.entity";
 
 const CACHE_TTL = 5 * 60 * 1000;
@@ -17,7 +19,13 @@ interface PermsCacheEntry {
   data: string[];
 }
 
-/** 权限校验核心服务，角色级版本号缓存，热路径纯 Redis 零 DB 查询 */
+interface RolesCacheEntry {
+  roleIds: number[];
+  roleVersions: RoleVersions;
+  data: string[];
+}
+
+/** 授权服务：角色和权限校验、缓存及缓存失效。 */
 @Injectable()
 export class AuthorizationService {
   constructor(
@@ -25,31 +33,29 @@ export class AuthorizationService {
     private readonly userRepository: Repository<User>,
     @Inject(CACHE_MANAGER)
     private readonly cache: Cache,
+    @Inject(REDIS_CLIENT)
+    private readonly redisClient: RedisClient,
   ) {}
 
-  /** 获取底层 Redis 客户端，用于原子操作 */
-  private get redis() {
-    return (this.cache.stores as any)[0]?.store?.client;
-  }
-
-  /** 批量获取角色版本号 */
   private async getRoleVersions(roleIds: number[]): Promise<number[]> {
     if (!roleIds.length) return [];
     const keys = roleIds.map((id) => `authz:role:version:${id}`);
-    const values: (string | null)[] = await this.redis.mGet(keys);
+    const values = await this.redisClient.mGet(keys);
     return values.map((v) => (v !== null ? Number(v) : 0));
   }
 
-  /** 角色权限变更时原子递增版本号，不设 TTL */
   async incrementRoleVersion(roleId: number) {
-    await this.redis.incr(`authz:role:version:${roleId}`);
+    await this.redisClient.incr(`authz:role:version:${roleId}`);
   }
 
-  /** 获取用户角色编码列表（缓存 5 分钟） */
   async getRoles(userId: number) {
     const cacheKey = `authz:roles:${userId}`;
-    const cached = await this.cache.get<string[]>(cacheKey);
-    if (cached) return new Set(cached);
+    const cached = await this.cache.get<RolesCacheEntry>(cacheKey);
+    if (cached?.roleIds && cached.roleVersions) {
+      const versions = await this.getRoleVersions(cached.roleIds);
+      const allMatch = cached.roleIds.every((id, i) => cached.roleVersions[id] === versions[i]);
+      if (allMatch) return new Set(cached.data);
+    }
 
     const user = await this.userRepository.findOne({
       where: { id: userId },
@@ -57,30 +63,33 @@ export class AuthorizationService {
     });
     if (!user) return new Set<string>();
 
-    const codes = user.roles.filter((r) => r.status === 1).map((r) => r.code);
-    await this.cache.set(cacheKey, codes, CACHE_TTL);
+    const activeRoles = user.roles.filter((role) => role.status === 1);
+    const roleIds = activeRoles.map((role) => role.id);
+    const versions = await this.getRoleVersions(roleIds);
+    const roleVersions: RoleVersions = {};
+    roleIds.forEach((id, i) => {
+      roleVersions[id] = versions[i] ?? 0;
+    });
+    const codes = activeRoles.map((role) => role.code);
+    await this.cache.set(cacheKey, { roleIds, roleVersions, data: codes }, CACHE_TTL);
     return new Set(codes);
   }
 
-  /** 获取用户权限码列表，热路径纯 Redis 零 DB 查询 */
   async getPermissions(userId: number) {
     const permsKey = `authz:perms:${userId}`;
     const rolesKey = `authz:user:roles:${userId}`;
-
-    // 1. 读缓存
     const [cachedPerms, cachedRoleIds] = await Promise.all([
       this.cache.get<PermsCacheEntry>(permsKey),
       this.cache.get<number[]>(rolesKey),
     ]);
 
-    // 2. 缓存命中 → 批量校验角色版本号，零 DB 查询
-    if (cachedPerms && cachedRoleIds?.length) {
+    // 空角色列表也是有效缓存，避免无角色用户每次都回源数据库。
+    if (cachedPerms && cachedRoleIds) {
       const versions = await this.getRoleVersions(cachedRoleIds);
       const allMatch = cachedRoleIds.every((id, i) => cachedPerms.roleVersions[id] === versions[i]);
       if (allMatch) return new Set(cachedPerms.data);
     }
 
-    // 3. 缓存失效或不存在，从 DB 重新计算
     const user = await this.userRepository.findOne({
       where: { id: userId },
       relations: { roles: { permissions: true } },
@@ -99,7 +108,6 @@ export class AuthorizationService {
       (r) => r.permissions?.filter((p) => p.status === 1).map((p) => p.code) ?? [],
     );
 
-    // 4. 同时缓存权限结果和角色列表，下次校验不查 DB
     await Promise.all([
       this.cache.set(permsKey, { roleVersions, data: codes }, CACHE_TTL),
       this.cache.set(rolesKey, roleIds, CACHE_TTL),
@@ -107,7 +115,6 @@ export class AuthorizationService {
     return new Set(codes);
   }
 
-  /** 清除单个用户缓存（用户角色变更时调用） */
   async clearCache(userId: number) {
     await Promise.all([
       this.cache.del(`authz:perms:${userId}`),
@@ -124,5 +131,26 @@ export class AuthorizationService {
   async hasRoles(userId: number, required: string[]) {
     const roles = await this.getRoles(userId);
     return required.some((r) => roles.has(r));
+  }
+
+  /** 角色只能由不低于目标用户的上级委派，且不能委派同级或更高角色。 */
+  async assertCanAssignRoles(actorId: number, targetUser: User, requestedRoles: Role[]) {
+    const actor = await this.userRepository.findOne({
+      where: { id: actorId },
+      relations: { roles: true },
+    });
+    if (!actor) throw new ForbiddenException("无权分配角色");
+    if (actor.id === targetUser.id) throw new ForbiddenException("不能修改自己的角色");
+
+    const actorLevel = Math.max(
+      ...actor.roles.filter((role) => role.status === 1).map((role) => role.level),
+      -1,
+    );
+    const targetLevel = Math.max(...targetUser.roles.map((role) => role.level), -1);
+    const requestedLevel = Math.max(...requestedRoles.map((role) => role.level), -1);
+
+    if (actorLevel <= targetLevel || requestedLevel >= actorLevel) {
+      throw new ForbiddenException("不能管理同级或更高等级的角色");
+    }
   }
 }

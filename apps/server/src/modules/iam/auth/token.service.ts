@@ -13,7 +13,7 @@ import type { User } from "../users/entities/user.entity";
 
 export interface JwtPayload {
   sub: number;
-  username: string;
+  email: string | null;
 }
 
 export interface TokenPair {
@@ -51,7 +51,7 @@ export class TokenService {
 
   /** 签发 JWT access token */
   private async generateAccessToken(user: User): Promise<string> {
-    return this.jwtService.signAsync({ sub: user.id, username: user.username } satisfies JwtPayload, {
+    return this.jwtService.signAsync({ sub: user.id, email: user.email } satisfies JwtPayload, {
       expiresIn: this.accessExpiresSec,
     });
   }

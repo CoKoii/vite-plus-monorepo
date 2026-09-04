@@ -3,6 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { In, Repository } from "typeorm";
 
 import { PaginatedResult, PaginationQuery } from "../../../common/dto/pagination.dto";
+import { AuthorizationService } from "../authorization/authorization.service";
 import { Role } from "../roles/entities/role.entity";
 import { User } from "./entities/user.entity";
 
@@ -14,13 +15,14 @@ export class UsersService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(Role)
     private readonly roleRepository: Repository<Role>,
+    private readonly authorizationService: AuthorizationService,
   ) {}
 
-  findByUsername(username: string, selectPassword = false) {
+  findByEmail(email: string, selectPassword = false) {
     const qb = this.userRepository
       .createQueryBuilder("user")
-      .where("user.username = :username", { username });
-    if (selectPassword) qb.addSelect("user.password");
+      .where("user.email = :email", { email: email.trim().toLowerCase() });
+    if (selectPassword) qb.addSelect("user.passwordHash");
     return qb.getOne();
   }
 
@@ -28,8 +30,10 @@ export class UsersService {
     return this.userRepository.findOne({ where: { id } });
   }
 
-  create(username: string, password: string) {
-    return this.userRepository.save(this.userRepository.create({ username, password }));
+  create(email: string, passwordHash: string) {
+    return this.userRepository.save(
+      this.userRepository.create({ email: email.trim().toLowerCase(), passwordHash }),
+    );
   }
 
   /** 分页列表，只带角色不带权限，避免深层 JOIN */
@@ -48,9 +52,9 @@ export class UsersService {
     };
   }
 
-  async updateRoles(id: number, roleIds: number[]) {
+  async updateRoles(actorId: number, targetUserId: number, roleIds: number[]) {
     const user = await this.userRepository.findOne({
-      where: { id },
+      where: { id: targetUserId },
       relations: { roles: true },
     });
     if (!user) throw new NotFoundException("用户不存在");
@@ -67,7 +71,10 @@ export class UsersService {
       );
     }
 
+    await this.authorizationService.assertCanAssignRoles(actorId, user, roles);
     user.roles = roles;
-    return this.userRepository.save(user);
+    const updatedUser = await this.userRepository.save(user);
+    await this.authorizationService.clearCache(targetUserId);
+    return updatedUser;
   }
 }

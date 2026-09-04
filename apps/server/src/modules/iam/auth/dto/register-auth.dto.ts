@@ -1,8 +1,8 @@
-import { IsEmail, IsOptional, IsString, MaxLength, MinLength } from "class-validator";
+import { IsEmail, IsOptional, IsString, Length, MaxLength, MinLength } from "class-validator";
 
 export class RegisterAuthDto {
   @IsEmail()
-  username!: string;
+  email!: string;
 
   @IsString()
   @MinLength(8)
@@ -11,5 +11,6 @@ export class RegisterAuthDto {
 
   @IsOptional()
   @IsString()
+  @Length(6, 6)
   captcha?: string;
 }

@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 
-import { AuthorizationService } from "../authorization.service";
+import { AuthorizationService } from "../../authorization/authorization.service";
 import { ROLES_KEY } from "../decorators/roles.decorator";
 
 /** 角色校验守卫，通过 AuthorizationService 查库校验 */

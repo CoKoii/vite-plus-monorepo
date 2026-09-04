@@ -1,7 +1,15 @@
 import { createKeyv } from "@keyv/redis";
-import { CacheModule as NestCacheModule } from "@nestjs/cache-manager";
+import { CACHE_MANAGER, CacheModule as NestCacheModule } from "@nestjs/cache-manager";
 import { Module } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import type { Cache } from "cache-manager";
+
+export const REDIS_CLIENT = Symbol("REDIS_CLIENT");
+
+export interface RedisClient {
+  mGet(keys: string[]): Promise<(string | null)[]>;
+  incr(key: string): Promise<number>;
+}
 
 @Module({
   imports: [
@@ -23,6 +31,18 @@ import { ConfigService } from "@nestjs/config";
     }),
   ],
 
-  exports: [NestCacheModule],
+  providers: [
+    {
+      provide: REDIS_CLIENT,
+      inject: [CACHE_MANAGER],
+      useFactory: (cache: Cache) => {
+        const client = cache.stores[0]?.store?.client;
+        if (!client) throw new Error("Redis client is unavailable");
+        return client;
+      },
+    },
+  ],
+
+  exports: [NestCacheModule, REDIS_CLIENT],
 })
 export class CacheModule {}

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger, type OnApplicationShutdown } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
@@ -17,8 +17,9 @@ const MAX_BUFFER_SIZE = 10_000;
 
 /** 审计日志服务，内存队列批量写入，不阻塞主请求 */
 @Injectable()
-export class AuditService {
+export class AuditService implements OnApplicationShutdown {
   private readonly logger = new Logger(AuditService.name);
+  private readonly flushTimer: NodeJS.Timeout;
   private buffer: AuditLogParams[] = [];
   private flushing = false;
 
@@ -26,7 +27,13 @@ export class AuditService {
     @InjectRepository(AuditLog)
     private readonly auditRepository: Repository<AuditLog>,
   ) {
-    setInterval(() => this.flush(), 3000);
+    this.flushTimer = setInterval(() => void this.flush(), 3000);
+    this.flushTimer.unref();
+  }
+
+  async onApplicationShutdown() {
+    clearInterval(this.flushTimer);
+    await this.flush();
   }
 
   /** 写入审计日志，缓冲区满时丢弃最早的数据保护内存 */

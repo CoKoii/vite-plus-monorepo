@@ -7,7 +7,7 @@ import { ConfigService } from "@nestjs/config";
 import { InjectDataSource } from "@nestjs/typeorm";
 import * as argon2 from "argon2";
 import type { Cache } from "cache-manager";
-import { DataSource } from "typeorm";
+import { DataSource, QueryFailedError } from "typeorm";
 
 import {
   AccountDisabledException,
@@ -38,29 +38,29 @@ export class AuthService {
     private readonly dataSource: DataSource,
   ) {}
 
-  /** 发送验证码到 username 对应的邮箱，60 秒冷却，5 分钟过期 */
+  /** 发送验证码到 email，60 秒冷却，5 分钟过期 */
   async generateCaptcha(dto: GenerateCaptchaDto) {
     if (!this.configService.get<boolean>("CAPTCHA_ENABLED", false)) {
       throw new BadRequestException("验证码注册未开启");
     }
 
-    const { username } = dto;
-    const cooldown = await this.cache.get(`captcha:cooldown:${username}`);
+    const email = dto.email.trim().toLowerCase();
+    const cooldown = await this.cache.get(`captcha:cooldown:${email}`);
     if (cooldown) throw new TooManyRequestsException();
 
     const code = randomInt(100000, 1000000).toString();
-    await this.cache.set(`captcha:code:${username}`, code, 5 * 60 * 1000);
-    await this.cache.set(`captcha:cooldown:${username}`, true, 60 * 1000);
+    await this.cache.set(`captcha:code:${email}`, code, 5 * 60 * 1000);
+    await this.cache.set(`captcha:cooldown:${email}`, true, 60 * 1000);
 
     try {
       await this.mailService.sendVerificationCode(
-        username,
+        email,
         code,
         this.configService.getOrThrow("LOGIN_URL"),
       );
     } catch {
-      await this.cache.del(`captcha:code:${username}`);
-      await this.cache.del(`captcha:cooldown:${username}`);
+      await this.cache.del(`captcha:code:${email}`);
+      await this.cache.del(`captcha:cooldown:${email}`);
       throw new MailSendFailedException();
     }
     return "验证码发送成功，请注意查收";
@@ -68,43 +68,59 @@ export class AuthService {
 
   /** 注册账号并创建空资料，事务保证一致性 */
   async register(dto: RegisterAuthDto): Promise<TokenPair> {
-    const { username, captcha, password } = dto;
+    const email = dto.email.trim().toLowerCase();
+    const { captcha, password } = dto;
 
-    const existing = await this.usersService.findByUsername(username);
+    const existing = await this.usersService.findByEmail(email);
     if (existing) throw new EmailAlreadyExistsException();
 
-    if (captcha !== undefined) {
-      if (!this.configService.get<boolean>("CAPTCHA_ENABLED", false)) {
-        throw new BadRequestException("验证码注册未开启");
-      }
-
-      const cached = await this.cache.get<string>(`captcha:code:${username}`);
-      if (!captcha || !cached || cached !== captcha) throw new CaptchaInvalidException();
-      await this.cache.del(`captcha:code:${username}`);
+    const captchaEnabled = this.configService.get<boolean>("CAPTCHA_ENABLED", false);
+    if (captchaEnabled) {
+      if (!captcha) throw new CaptchaInvalidException();
+      const cached = await this.cache.get<string>(`captcha:code:${email}`);
+      if (!cached || cached !== captcha) throw new CaptchaInvalidException();
+      await this.cache.del(`captcha:code:${email}`);
+    } else if (captcha !== undefined) {
+      throw new BadRequestException("验证码注册未开启");
     }
 
     const hashed = await argon2.hash(password);
 
-    const user = await this.dataSource.transaction(async (tx) => {
-      const users = tx.getRepository(User);
-      const profiles = tx.getRepository(Profile);
+    let user: User;
+    try {
+      user = await this.dataSource.transaction(async (tx) => {
+        const users = tx.getRepository(User);
+        const profiles = tx.getRepository(Profile);
 
-      const u = await users.save(users.create({ username, password: hashed }));
-      await profiles.save(profiles.create({ nickname: username, user: u }));
-      return u;
-    });
+        const u = await users.save(
+          users.create({
+            email,
+            passwordHash: hashed,
+            emailVerifiedAt: captchaEnabled ? new Date() : null,
+          }),
+        );
+        await profiles.save(profiles.create({ nickname: email, user: u }));
+        return u;
+      });
+    } catch (error) {
+      if (error instanceof QueryFailedError && error.driverError?.code === "23505") {
+        throw new EmailAlreadyExistsException();
+      }
+      throw error;
+    }
 
     return this.tokenService.generateTokenPair(user);
   }
 
-  /** username（邮箱）密码登录 */
-  async login(username: string, password: string): Promise<TokenPair> {
-    const user = await this.usersService.findByUsername(username, true);
-    if (!user) {
+  /** email + password 登录 */
+  async login(email: string, password: string): Promise<TokenPair> {
+    const user = await this.usersService.findByEmail(email, true);
+    if (!user || !user.passwordHash) {
       await argon2.hash(password);
       throw new InvalidCredentialsException();
     }
-    if (!(await argon2.verify(user.password, password))) throw new InvalidCredentialsException();
+    if (!(await argon2.verify(user.passwordHash, password)))
+      throw new InvalidCredentialsException();
     if (user.status !== 1) throw new AccountDisabledException();
     return this.tokenService.generateTokenPair(user);
   }

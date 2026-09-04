@@ -14,6 +14,8 @@ export enum ErrorCode {
   CONFLICT = "CONFLICT",
   /** 请求过于频繁，被限流 */
   TOO_MANY_REQUESTS = "TOO_MANY_REQUESTS",
+  /** 依赖服务暂时不可用 */
+  SERVICE_UNAVAILABLE = "SERVICE_UNAVAILABLE",
   /** 邮件发送失败 */
   MAIL_SEND_FAILED = "MAIL_SEND_FAILED",
   /** 服务器内部错误 */

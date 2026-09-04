@@ -3,7 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
 import { PaginatedResult, PaginationQuery } from "../../../common/dto/pagination.dto";
-import { AuthorizationService } from "../auth/authorization.service";
+import { AuthorizationService } from "../authorization/authorization.service";
 import { Role } from "../roles/entities/role.entity";
 import { CreatePermissionDto } from "./dto/create-permission.dto";
 import { UpdatePermissionDto } from "./dto/update-permission.dto";
@@ -50,7 +50,9 @@ export class PermissionsService {
     if (!permission) throw new NotFoundException("权限不存在");
 
     const oldStatus = permission.status;
-    Object.assign(permission, dto);
+    if (dto.name !== undefined) permission.name = dto.name;
+    if (dto.description !== undefined) permission.description = dto.description;
+    if (dto.status !== undefined) permission.status = dto.status;
     await this.permissionRepository.save(permission);
 
     // 状态变更（启用/禁用）→ 所有包含该权限的角色版本号 +1
@@ -71,7 +73,7 @@ export class PermissionsService {
     const roles = await this.roleRepository.find({
       where: { permissions: { id } },
     });
-    await this.permissionRepository.remove(permission);
+    await this.permissionRepository.softRemove(permission);
     await Promise.all(roles.map((r) => this.authorizationService.incrementRoleVersion(r.id)));
     return "删除成功";
   }

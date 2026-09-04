@@ -7,7 +7,12 @@ export class UpdateProfileDto {
   nickname?: string;
 
   @IsString()
-  @MaxLength(200)
+  @MaxLength(500)
   @IsOptional()
   avatar?: string;
+
+  @IsString()
+  @MaxLength(500)
+  @IsOptional()
+  bio?: string;
 }

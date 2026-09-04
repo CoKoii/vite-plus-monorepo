@@ -27,6 +27,8 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const httpAdapterHost = app.get(HttpAdapterHost);
 
+  app.enableShutdownHooks();
+
   app.useLogger(app.get<LoggerService>(WINSTON_MODULE_NEST_PROVIDER));
 
   app.useGlobalPipes(

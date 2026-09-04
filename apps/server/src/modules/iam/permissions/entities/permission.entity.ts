@@ -1,8 +1,9 @@
-import { Column, Entity } from "typeorm";
+import { Check, Column, Entity } from "typeorm";
 
 import { BaseEntity } from "../../../../common/entities/base.entity";
 
 @Entity({ comment: "权限" })
+@Check('"status" IN (0, 1)')
 export class Permission extends BaseEntity {
   @Column({ comment: "权限名称", length: 50 })
   name!: string;

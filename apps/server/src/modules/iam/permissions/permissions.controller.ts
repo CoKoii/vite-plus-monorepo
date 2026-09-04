@@ -11,6 +11,8 @@ import {
 } from "@nestjs/common";
 
 import { PaginationQuery } from "../../../common/dto/pagination.dto";
+import { Permissions } from "../auth/decorators/permissions.decorator";
+import { Roles } from "../auth/decorators/roles.decorator";
 import { CreatePermissionDto } from "./dto/create-permission.dto";
 import { UpdatePermissionDto } from "./dto/update-permission.dto";
 import { PermissionsService } from "./permissions.service";
@@ -20,26 +22,34 @@ import { PermissionsService } from "./permissions.service";
 export class PermissionsController {
   constructor(private readonly permissionsService: PermissionsService) {}
 
+  @Permissions("iam:permission:read")
   @Get()
   findAll(@Query() query: PaginationQuery) {
     return this.permissionsService.findAll(query);
   }
 
+  @Permissions("iam:permission:read")
   @Get(":id")
   findById(@Param("id", ParseIntPipe) id: number) {
     return this.permissionsService.findById(id);
   }
 
+  @Roles("super_admin")
+  @Permissions("iam:permission:create")
   @Post()
   create(@Body() dto: CreatePermissionDto) {
     return this.permissionsService.create(dto);
   }
 
+  @Roles("super_admin")
+  @Permissions("iam:permission:update")
   @Patch(":id")
   update(@Param("id", ParseIntPipe) id: number, @Body() dto: UpdatePermissionDto) {
     return this.permissionsService.update(id, dto);
   }
 
+  @Roles("super_admin")
+  @Permissions("iam:permission:delete")
   @Delete(":id")
   delete(@Param("id", ParseIntPipe) id: number) {
     return this.permissionsService.delete(id);

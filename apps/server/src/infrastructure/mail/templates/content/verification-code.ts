@@ -15,7 +15,7 @@ const template = handlebars.compile(`<p style="${paragraphStyle}">
   {{code}}
 </p>
 <p style="${noteStyle}">
-  验证码 10 分钟内有效，请勿泄露给他人。
+  验证码 5 分钟内有效，请勿泄露给他人。
 </p>
 {{> button label="前往登录" url=loginUrl}}`);
 

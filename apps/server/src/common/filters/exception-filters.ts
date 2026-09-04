@@ -65,6 +65,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     let code: string;
     let message: string;
+    let details: string[] | undefined;
 
     if (typeof resp === "string") {
       code = statusToErrorCode(status);
@@ -72,9 +73,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
     } else {
       const body = resp as Record<string, any>;
       code = (body["code"] as string) ?? statusToErrorCode(status);
-      message = Array.isArray(body["message"])
-        ? body["message"].join("; ")
-        : (body["message"] ?? exception.message);
+      details = Array.isArray(body["message"]) ? (body["message"] as string[]) : undefined;
+      message = details?.join("; ") ?? body["message"] ?? exception.message;
     }
 
     this.logger.warn({
@@ -87,7 +87,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     });
     this.httpAdapterHost.httpAdapter.reply(
       host.switchToHttp().getResponse(),
-      { code, message, requestId: req.id ?? null },
+      { code, message, ...(details ? { details } : {}), requestId: req.id ?? null },
       status,
     );
   }

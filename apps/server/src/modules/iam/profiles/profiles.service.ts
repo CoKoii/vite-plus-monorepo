@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
-import { AuthorizationService } from "../auth/authorization.service";
+import { AuthorizationService } from "../authorization/authorization.service";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { Profile } from "./entities/profile.entity";
 

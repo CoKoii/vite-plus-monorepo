@@ -1,11 +1,23 @@
-import { IsArray, IsInt, IsOptional, IsString, MaxLength, Min } from "class-validator";
+import {
+  ArrayUnique,
+  IsArray,
+  IsIn,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MaxLength,
+  Min,
+} from "class-validator";
 
 export class CreateRoleDto {
   @IsString()
+  @IsNotEmpty()
   @MaxLength(50)
   name!: string;
 
   @IsString()
+  @IsNotEmpty()
   @MaxLength(50)
   code!: string;
 
@@ -17,9 +29,14 @@ export class CreateRoleDto {
   @IsInt()
   @Min(0)
   @IsOptional()
+  level?: number;
+
+  @IsIn([0, 1])
+  @IsOptional()
   status?: number;
 
   @IsArray()
+  @ArrayUnique()
   @IsInt({ each: true })
   @IsOptional()
   permissionIds?: number[];

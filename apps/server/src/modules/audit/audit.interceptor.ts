@@ -6,9 +6,9 @@ import {
 } from "@nestjs/common";
 import { Observable, tap } from "rxjs";
 
-import { AuditService } from "../../modules/audit/audit.service";
+import { AuditService } from "./audit.service";
 
-/** 自动审计拦截器，拦截所有写操作并记录审计日志，异步批量写入不阻塞主流程 */
+/** 自动审计写操作，不阻塞主请求。 */
 @Injectable()
 export class AuditInterceptor implements NestInterceptor {
   constructor(private readonly auditService: AuditService) {}

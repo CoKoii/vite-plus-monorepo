@@ -3,7 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { In, Repository } from "typeorm";
 
 import { PaginatedResult, PaginationQuery } from "../../../common/dto/pagination.dto";
-import { AuthorizationService } from "../auth/authorization.service";
+import { AuthorizationService } from "../authorization/authorization.service";
 import { Permission } from "../permissions/entities/permission.entity";
 import { CreateRoleDto } from "./dto/create-role.dto";
 import { UpdateRoleDto } from "./dto/update-role.dto";
@@ -58,6 +58,8 @@ export class RolesService {
       name: dto.name,
       code: dto.code,
       description: dto.description,
+      level: dto.level,
+      status: dto.status,
     });
     if (dto.permissionIds?.length) {
       role.permissions = await this.findPermissionsOrThrow(dto.permissionIds);
@@ -76,12 +78,21 @@ export class RolesService {
     const oldStatus = role.status;
     if (dto.name !== undefined) role.name = dto.name;
     if (dto.description !== undefined) role.description = dto.description;
+    if (dto.level !== undefined) {
+      if (role.isSystem) throw new BadRequestException("系统角色等级不可修改");
+      role.level = dto.level;
+    }
     if (dto.permissionIds !== undefined) {
       role.permissions = dto.permissionIds.length
         ? await this.findPermissionsOrThrow(dto.permissionIds)
         : [];
     }
-    if (dto.status !== undefined) role.status = dto.status;
+    if (dto.status !== undefined) {
+      if (role.code === "super_admin" && dto.status === 0) {
+        throw new BadRequestException("超级管理员角色不可禁用");
+      }
+      role.status = dto.status;
+    }
 
     await this.roleRepository.save(role);
 
@@ -92,9 +103,13 @@ export class RolesService {
     return "更新成功";
   }
 
-  /** 删除角色。已分配用户的角色由数据库 FK 约束拒绝，不会级联删除关联 */
+  /** 软删除角色，保留历史关联和审计意义。 */
   async delete(id: number) {
-    const result = await this.roleRepository.delete(id);
+    const role = await this.roleRepository.findOne({ where: { id } });
+    if (!role) throw new NotFoundException("角色不存在");
+    if (role.isSystem) throw new BadRequestException("系统角色不可删除");
+
+    const result = await this.roleRepository.softDelete(id);
     if (result.affected === 0) throw new NotFoundException("角色不存在");
     await this.authorizationService.incrementRoleVersion(id);
     return "删除成功";
