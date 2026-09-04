@@ -27,18 +27,43 @@ export const envValidationSchema = joi.object({
   REDIS_DB: joi.number().integer().min(0).default(0),
 
   // 邮件 SMTP
-  SMTP_HOST: joi.string().required(),
-  SMTP_PORT: joi.number().port().required(),
+  MAIL_ENABLED: joi.boolean().default(false),
+  SMTP_HOST: joi.when("MAIL_ENABLED", {
+    is: true,
+    then: joi.string().required(),
+    otherwise: joi.string().optional(),
+  }),
+  SMTP_PORT: joi.when("MAIL_ENABLED", {
+    is: true,
+    then: joi.number().port().required(),
+    otherwise: joi.number().port().optional(),
+  }),
   SMTP_SECURE: joi.boolean().default(true),
-  SMTP_USER: joi.string().required(),
-  SMTP_PASSWORD: joi.string().required(),
-  SMTP_FROM: joi.string().required(),
+  SMTP_USER: joi.when("MAIL_ENABLED", {
+    is: true,
+    then: joi.string().required(),
+    otherwise: joi.string().optional(),
+  }),
+  SMTP_PASSWORD: joi.when("MAIL_ENABLED", {
+    is: true,
+    then: joi.string().required(),
+    otherwise: joi.string().optional(),
+  }),
+  SMTP_FROM: joi.when("MAIL_ENABLED", {
+    is: true,
+    then: joi.string().required(),
+    otherwise: joi.string().optional(),
+  }),
 
   // 前端地址
   LOGIN_URL: joi.string().uri().required(),
 
   // 注册验证码：关闭时可直接使用 email + password 注册
-  CAPTCHA_ENABLED: joi.boolean().default(false),
+  CAPTCHA_ENABLED: joi.when("MAIL_ENABLED", {
+    is: false,
+    then: joi.valid(false).default(false),
+    otherwise: joi.boolean().default(false),
+  }),
 
   // IAM 默认数据初始化
   BOOTSTRAP_ENABLED: joi.boolean().default(false),

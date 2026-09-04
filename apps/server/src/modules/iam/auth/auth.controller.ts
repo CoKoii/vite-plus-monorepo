@@ -1,5 +1,5 @@
 /** 认证接口：验证码、注册、登录、刷新、退出 */
-import { Body, Controller, Post } from "@nestjs/common";
+import { Body, Controller, HttpCode, HttpStatus, Post } from "@nestjs/common";
 import { Throttle } from "@nestjs/throttler";
 
 import { AuthService } from "./auth.service";
@@ -15,6 +15,7 @@ export class AuthController {
 
   @Throttle({ default: { ttl: 60000, limit: 3 } })
   @Public()
+  @HttpCode(HttpStatus.OK)
   @Post("captcha")
   generateCaptcha(@Body() dto: GenerateCaptchaDto) {
     return this.authService.generateCaptcha(dto);
@@ -29,17 +30,20 @@ export class AuthController {
 
   @Throttle({ default: { ttl: 60000, limit: 5 } })
   @Public()
+  @HttpCode(HttpStatus.OK)
   @Post("login")
   login(@Body() dto: LoginAuthDto) {
     return this.authService.login(dto.email, dto.password);
   }
 
   @Public()
+  @HttpCode(HttpStatus.OK)
   @Post("refresh")
   refresh(@Body() dto: RefreshAuthDto) {
     return this.authService.refresh(dto.refreshToken);
   }
 
+  @HttpCode(HttpStatus.OK)
   @Post("logout")
   logout(@Body() dto: RefreshAuthDto) {
     return this.authService.logout(dto.refreshToken);

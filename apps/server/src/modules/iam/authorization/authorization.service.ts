@@ -15,11 +15,13 @@ interface RoleVersions {
 }
 
 interface PermsCacheEntry {
+  userVersion: number;
   roleVersions: RoleVersions;
   data: string[];
 }
 
 interface RolesCacheEntry {
+  userVersion: number;
   roleIds: number[];
   roleVersions: RoleVersions;
   data: string[];
@@ -44,14 +46,24 @@ export class AuthorizationService {
     return values.map((v) => (v !== null ? Number(v) : 0));
   }
 
+  private async getUserVersion(userId: number): Promise<number> {
+    const [value] = await this.redisClient.mGet([`authz:user:version:${userId}`]);
+    return value !== null ? Number(value) : 0;
+  }
+
+  async incrementUserVersion(userId: number) {
+    await this.redisClient.incr(`authz:user:version:${userId}`);
+  }
+
   async incrementRoleVersion(roleId: number) {
     await this.redisClient.incr(`authz:role:version:${roleId}`);
   }
 
   async getRoles(userId: number) {
     const cacheKey = `authz:roles:${userId}`;
+    const userVersion = await this.getUserVersion(userId);
     const cached = await this.cache.get<RolesCacheEntry>(cacheKey);
-    if (cached?.roleIds && cached.roleVersions) {
+    if (cached?.roleIds && cached.roleVersions && cached.userVersion === userVersion) {
       const versions = await this.getRoleVersions(cached.roleIds);
       const allMatch = cached.roleIds.every((id, i) => cached.roleVersions[id] === versions[i]);
       if (allMatch) return new Set(cached.data);
@@ -71,20 +83,21 @@ export class AuthorizationService {
       roleVersions[id] = versions[i] ?? 0;
     });
     const codes = activeRoles.map((role) => role.code);
-    await this.cache.set(cacheKey, { roleIds, roleVersions, data: codes }, CACHE_TTL);
+    await this.cache.set(cacheKey, { userVersion, roleIds, roleVersions, data: codes }, CACHE_TTL);
     return new Set(codes);
   }
 
   async getPermissions(userId: number) {
     const permsKey = `authz:perms:${userId}`;
     const rolesKey = `authz:user:roles:${userId}`;
+    const userVersion = await this.getUserVersion(userId);
     const [cachedPerms, cachedRoleIds] = await Promise.all([
       this.cache.get<PermsCacheEntry>(permsKey),
       this.cache.get<number[]>(rolesKey),
     ]);
 
     // 空角色列表也是有效缓存，避免无角色用户每次都回源数据库。
-    if (cachedPerms && cachedRoleIds) {
+    if (cachedPerms?.userVersion === userVersion && cachedRoleIds) {
       const versions = await this.getRoleVersions(cachedRoleIds);
       const allMatch = cachedRoleIds.every((id, i) => cachedPerms.roleVersions[id] === versions[i]);
       if (allMatch) return new Set(cachedPerms.data);
@@ -109,7 +122,7 @@ export class AuthorizationService {
     );
 
     await Promise.all([
-      this.cache.set(permsKey, { roleVersions, data: codes }, CACHE_TTL),
+      this.cache.set(permsKey, { userVersion, roleVersions, data: codes }, CACHE_TTL),
       this.cache.set(rolesKey, roleIds, CACHE_TTL),
     ]);
     return new Set(codes);

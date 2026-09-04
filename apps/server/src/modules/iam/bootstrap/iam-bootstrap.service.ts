@@ -4,6 +4,7 @@ import { InjectDataSource } from "@nestjs/typeorm";
 import * as argon2 from "argon2";
 import { DataSource, EntityManager } from "typeorm";
 
+import { BootstrapException } from "../../../common/errors/business.exception";
 import { Permission } from "../permissions/entities/permission.entity";
 import { Profile } from "../profiles/entities/profile.entity";
 import { Role } from "../roles/entities/role.entity";
@@ -118,7 +119,7 @@ export class IamBootstrapService implements OnApplicationBootstrap {
 
     if (user) {
       if (!user.roles.some((assignedRole) => assignedRole.code === role.code)) {
-        throw new Error("默认账号 " + normalizedEmail + " 未绑定角色 " + role.code);
+        throw new BootstrapException("默认账号 " + normalizedEmail + " 未绑定角色 " + role.code);
       }
     } else {
       user = await users.save(

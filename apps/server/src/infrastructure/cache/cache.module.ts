@@ -4,6 +4,8 @@ import { Module } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import type { Cache } from "cache-manager";
 
+import { InfrastructureUnavailableException } from "../../common/errors/business.exception";
+
 export const REDIS_CLIENT = Symbol("REDIS_CLIENT");
 
 export interface RedisClient {
@@ -37,7 +39,7 @@ export interface RedisClient {
       inject: [CACHE_MANAGER],
       useFactory: (cache: Cache) => {
         const client = cache.stores[0]?.store?.client;
-        if (!client) throw new Error("Redis client is unavailable");
+        if (!client) throw new InfrastructureUnavailableException("Redis 客户端不可用");
         return client;
       },
     },

@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { QueryFailedError, Repository } from "typeorm";
 
 import { PaginatedResult, PaginationQuery } from "../../../common/dto/pagination.dto";
+import { ResourceConflictException } from "../../../common/errors/business.exception";
 import { AuthorizationService } from "../authorization/authorization.service";
 import { Role } from "../roles/entities/role.entity";
 import { CreatePermissionDto } from "./dto/create-permission.dto";
@@ -41,7 +42,14 @@ export class PermissionsService {
   }
 
   async create(dto: CreatePermissionDto) {
-    await this.permissionRepository.save(this.permissionRepository.create(dto));
+    try {
+      await this.permissionRepository.save(this.permissionRepository.create(dto));
+    } catch (error) {
+      if (error instanceof QueryFailedError && error.driverError?.code === "23505") {
+        throw new ResourceConflictException("权限编码已存在");
+      }
+      throw error;
+    }
     return "创建成功";
   }
 

@@ -3,6 +3,7 @@ import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
 
+import { AccountDisabledException } from "../../../../common/errors/business.exception";
 import type { User } from "../../users/entities/user.entity";
 import { UsersService } from "../../users/users.service";
 import type { JwtPayload } from "../token.service";
@@ -24,6 +25,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, "jwt") {
   async validate(payload: JwtPayload): Promise<User> {
     const user = await this.usersService.findById(payload.sub);
     if (!user) throw new UnauthorizedException();
+    if (user.status !== 1) throw new AccountDisabledException();
     return user;
   }
 }

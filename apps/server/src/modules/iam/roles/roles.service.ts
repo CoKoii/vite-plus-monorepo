@@ -1,8 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { In, Repository } from "typeorm";
+import { In, QueryFailedError, Repository } from "typeorm";
 
 import { PaginatedResult, PaginationQuery } from "../../../common/dto/pagination.dto";
+import { ResourceConflictException } from "../../../common/errors/business.exception";
 import { AuthorizationService } from "../authorization/authorization.service";
 import { Permission } from "../permissions/entities/permission.entity";
 import { CreateRoleDto } from "./dto/create-role.dto";
@@ -64,7 +65,14 @@ export class RolesService {
     if (dto.permissionIds?.length) {
       role.permissions = await this.findPermissionsOrThrow(dto.permissionIds);
     }
-    await this.roleRepository.save(role);
+    try {
+      await this.roleRepository.save(role);
+    } catch (error) {
+      if (error instanceof QueryFailedError && error.driverError?.code === "23505") {
+        throw new ResourceConflictException("角色编码已存在");
+      }
+      throw error;
+    }
     return "创建成功";
   }
 

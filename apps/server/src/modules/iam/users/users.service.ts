@@ -74,6 +74,7 @@ export class UsersService {
     await this.authorizationService.assertCanAssignRoles(actorId, user, roles);
     user.roles = roles;
     const updatedUser = await this.userRepository.save(user);
+    await this.authorizationService.incrementUserVersion(targetUserId);
     await this.authorizationService.clearCache(targetUserId);
     return updatedUser;
   }

@@ -29,9 +29,39 @@ export class MailSendFailedException extends BusinessException {
   }
 }
 
+export class MailServiceDisabledException extends BusinessException {
+  constructor(message = "邮件服务未启用") {
+    super(ErrorCode.SERVICE_UNAVAILABLE, message, HttpStatus.SERVICE_UNAVAILABLE);
+  }
+}
+
+export class InfrastructureUnavailableException extends BusinessException {
+  constructor(message = "基础设施服务不可用") {
+    super(ErrorCode.SERVICE_UNAVAILABLE, message, HttpStatus.SERVICE_UNAVAILABLE);
+  }
+}
+
+export class ConfigurationException extends BusinessException {
+  constructor(message = "系统配置无效") {
+    super(ErrorCode.INTERNAL_ERROR, message, HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+}
+
+export class BootstrapException extends BusinessException {
+  constructor(message = "系统初始化失败") {
+    super(ErrorCode.INTERNAL_ERROR, message, HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+}
+
 export class EmailAlreadyExistsException extends BusinessException {
   constructor(message = "邮箱已被注册") {
     super(ErrorCode.AUTH_EMAIL_ALREADY_EXISTS, message, HttpStatus.CONFLICT);
+  }
+}
+
+export class ResourceConflictException extends BusinessException {
+  constructor(message = "资源已存在") {
+    super(ErrorCode.CONFLICT, message, HttpStatus.CONFLICT);
   }
 }
 
