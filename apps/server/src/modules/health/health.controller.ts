@@ -1,4 +1,4 @@
-import { Controller, Get, HttpException, HttpStatus } from "@nestjs/common";
+import { Controller, Get } from "@nestjs/common";
 import { SkipThrottle } from "@nestjs/throttler";
 
 import { Public } from "../iam/auth/decorators/public.decorator";
@@ -12,11 +12,7 @@ export class HealthController {
 
   @Public()
   @Get()
-  async check() {
-    const result = await this.healthService.check();
-    if (result.status !== "ok") {
-      throw new HttpException(result, HttpStatus.SERVICE_UNAVAILABLE);
-    }
-    return result;
+  check() {
+    return this.healthService.check();
   }
 }

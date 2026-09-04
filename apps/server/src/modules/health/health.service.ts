@@ -1,5 +1,5 @@
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, ServiceUnavailableException } from "@nestjs/common";
 import { InjectDataSource } from "@nestjs/typeorm";
 import type { Cache } from "cache-manager";
 import { DataSource } from "typeorm";
@@ -27,11 +27,7 @@ export class HealthService {
     ]);
     if (redis) await this.cache.del("health:ping");
 
-    return {
-      status: db && redis ? "ok" : "degraded",
-      db,
-      redis,
-      timestamp: new Date().toISOString(),
-    };
+    if (!db || !redis) throw new ServiceUnavailableException("系统服务异常");
+    return "系统服务一切正常";
   }
 }

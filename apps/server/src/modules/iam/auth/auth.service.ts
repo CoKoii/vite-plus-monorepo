@@ -119,7 +119,8 @@ export class AuthService {
   }
 
   /** 退出登录 */
-  async logout(refreshToken: string): Promise<void> {
+  async logout(refreshToken: string): Promise<string> {
     await this.tokenService.revokeRefreshToken(refreshToken);
+    return "退出成功";
   }
 }
