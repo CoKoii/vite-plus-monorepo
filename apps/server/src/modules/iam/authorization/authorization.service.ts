@@ -40,11 +40,22 @@ export class AuthorizationService {
     private readonly redisClient: RedisClient,
   ) {}
 
-  private async getRoleVersions(roleIds: number[]): Promise<number[]> {
-    if (!roleIds.length) return [];
+  private async getRoleVersions(roleIds: number[]): Promise<RoleVersions> {
+    if (!roleIds.length) return {};
     const keys = roleIds.map((id) => `authz:role:version:${id}`);
     const values = await this.redisClient.mGet(keys);
-    return values.map((v) => (v !== null ? Number(v) : 0));
+    return roleIds.reduce<RoleVersions>((versions, id, index) => {
+      versions[id] = values[index] !== null ? Number(values[index]) : 0;
+      return versions;
+    }, {});
+  }
+
+  private roleVersionsMatch(
+    roleIds: number[],
+    expected: RoleVersions,
+    actual: RoleVersions,
+  ): boolean {
+    return roleIds.every((id) => expected[id] === actual[id]);
   }
 
   private async getUserVersion(userId: number): Promise<number> {
@@ -66,8 +77,9 @@ export class AuthorizationService {
     const cached = await this.cache.get<RolesCacheEntry>(cacheKey);
     if (cached?.roleIds && cached.roleVersions && cached.userVersion === userVersion) {
       const versions = await this.getRoleVersions(cached.roleIds);
-      const allMatch = cached.roleIds.every((id, i) => cached.roleVersions[id] === versions[i]);
-      if (allMatch) return new Set(cached.data);
+      if (this.roleVersionsMatch(cached.roleIds, cached.roleVersions, versions)) {
+        return new Set(cached.data);
+      }
     }
 
     const user = await this.userRepository.findOne({
@@ -78,11 +90,7 @@ export class AuthorizationService {
 
     const activeRoles = user.roles.filter((role) => role.status === 1);
     const roleIds = activeRoles.map((role) => role.id);
-    const versions = await this.getRoleVersions(roleIds);
-    const roleVersions: RoleVersions = {};
-    roleIds.forEach((id, i) => {
-      roleVersions[id] = versions[i] ?? 0;
-    });
+    const roleVersions = await this.getRoleVersions(roleIds);
     const codes = activeRoles.map((role) => role.code);
     await this.cache.set(cacheKey, { userVersion, roleIds, roleVersions, data: codes }, CACHE_TTL);
     return new Set(codes);
@@ -100,8 +108,9 @@ export class AuthorizationService {
     // 空角色列表也是有效缓存，避免无角色用户每次都回源数据库。
     if (cachedPerms?.userVersion === userVersion && cachedRoleIds) {
       const versions = await this.getRoleVersions(cachedRoleIds);
-      const allMatch = cachedRoleIds.every((id, i) => cachedPerms.roleVersions[id] === versions[i]);
-      if (allMatch) return new Set(cachedPerms.data);
+      if (this.roleVersionsMatch(cachedRoleIds, cachedPerms.roleVersions, versions)) {
+        return new Set(cachedPerms.data);
+      }
     }
 
     const user = await this.userRepository.findOne({
@@ -112,11 +121,7 @@ export class AuthorizationService {
 
     const activeRoles = user.roles.filter((r) => r.status === 1);
     const roleIds = activeRoles.map((r) => r.id);
-    const versions = await this.getRoleVersions(roleIds);
-    const roleVersions: RoleVersions = {};
-    roleIds.forEach((id, i) => {
-      roleVersions[id] = versions[i] ?? 0;
-    });
+    const roleVersions = await this.getRoleVersions(roleIds);
 
     const codes = activeRoles.flatMap(
       (r) => r.permissions?.filter((p) => p.status === 1).map((p) => p.code) ?? [],

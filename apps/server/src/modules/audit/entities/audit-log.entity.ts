@@ -20,5 +20,5 @@ export class AuditLog extends BaseEntity {
   ip?: string;
 
   @Column({ comment: "操作详情", type: "json", nullable: true })
-  detail?: Record<string, any>;
+  detail?: Record<string, unknown>;
 }

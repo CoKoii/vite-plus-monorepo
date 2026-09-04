@@ -6,6 +6,7 @@ import {
   PermissionDeniedException,
 } from "../../../../common/errors/business.exception";
 import { AuthorizationService } from "../../authorization/authorization.service";
+import type { User } from "../../users/entities/user.entity";
 import { PERMISSIONS_KEY } from "../decorators/permissions.decorator";
 
 /** 权限校验守卫，通过 AuthorizationService 查库校验 */
@@ -23,7 +24,7 @@ export class PermissionsGuard implements CanActivate {
     ]);
     if (!required?.length) return true;
 
-    const { user } = context.switchToHttp().getRequest<{ user?: { id: number } }>();
+    const { user } = context.switchToHttp().getRequest<{ user?: Pick<User, "id"> }>();
     if (!user) throw new AuthenticationRequiredException();
 
     if (!(await this.authorizationService.hasPermissions(user.id, required))) {

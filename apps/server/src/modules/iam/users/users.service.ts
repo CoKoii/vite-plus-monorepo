@@ -7,6 +7,7 @@ import {
   ResourceNotFoundException,
   ValidationException,
 } from "../../../common/errors/business.exception";
+import { normalizeEmail } from "../../../common/utils/email.util";
 import { AuthorizationService } from "../authorization/authorization.service";
 import { Role } from "../roles/entities/role.entity";
 import { User } from "./entities/user.entity";
@@ -25,7 +26,7 @@ export class UsersService {
   findByEmail(email: string, selectPassword = false) {
     const qb = this.userRepository
       .createQueryBuilder("user")
-      .where("user.email = :email", { email: email.trim().toLowerCase() });
+      .where("user.email = :email", { email: normalizeEmail(email) });
     if (selectPassword) qb.addSelect("user.passwordHash");
     return qb.getOne();
   }
@@ -52,12 +53,6 @@ export class UsersService {
 
   async incrementTokenVersion(userId: number) {
     await this.userRepository.increment({ id: userId }, "tokenVersion", 1);
-  }
-
-  create(email: string, passwordHash: string) {
-    return this.userRepository.save(
-      this.userRepository.create({ email: email.trim().toLowerCase(), passwordHash }),
-    );
   }
 
   /** 分页列表，只带角色不带权限，避免深层 JOIN */

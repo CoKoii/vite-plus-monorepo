@@ -26,12 +26,10 @@ export class ProfilesService {
       this.authorizationService.getPermissions(userId),
     ]);
 
-    const { ...profileData } = profile;
-    return {
-      ...profileData,
+    return Object.assign({}, profile, {
       permissions: [...permissions],
       roles: [...roles],
-    };
+    });
   }
 
   async updateMyProfile(userId: number, dto: UpdateProfileDto) {
@@ -39,7 +37,7 @@ export class ProfilesService {
       where: { user: { id: userId } },
     });
     if (!profile) {
-      profile = this.profileRepository.create({ user: { id: userId } as any });
+      profile = this.profileRepository.create({ user: { id: userId } });
     }
     Object.assign(profile, dto);
     return this.profileRepository.save(profile);

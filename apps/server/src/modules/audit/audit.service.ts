@@ -10,7 +10,7 @@ export class AuditLogParams {
   resource!: string;
   resourceId?: number;
   ip?: string;
-  detail?: Record<string, any>;
+  detail?: Record<string, unknown>;
 }
 
 const MAX_BUFFER_SIZE = 10_000;

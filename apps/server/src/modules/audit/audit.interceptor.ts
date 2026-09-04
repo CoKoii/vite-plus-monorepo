@@ -6,6 +6,7 @@ import {
 } from "@nestjs/common";
 import { Observable, tap } from "rxjs";
 
+import type { User } from "../iam/users/entities/user.entity";
 import { AuditService } from "./audit.service";
 
 /** 自动审计写操作，不阻塞主请求。 */
@@ -13,10 +14,10 @@ import { AuditService } from "./audit.service";
 export class AuditInterceptor implements NestInterceptor {
   constructor(private readonly auditService: AuditService) {}
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const req = context
       .switchToHttp()
-      .getRequest<{ method: string; url: string; ip: string; user?: { id: number } }>();
+      .getRequest<{ method: string; url: string; ip: string; user?: Pick<User, "id"> }>();
 
     if (!["POST", "PUT", "PATCH", "DELETE"].includes(req.method)) return next.handle();
 

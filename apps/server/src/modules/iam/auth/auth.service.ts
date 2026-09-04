@@ -23,6 +23,7 @@ import {
   TooManyRequestsException,
   ValidationException,
 } from "../../../common/errors/business.exception";
+import { normalizeEmail } from "../../../common/utils/email.util";
 import { MailService } from "../../../infrastructure/mail/mail.service";
 import { Profile } from "../profiles/entities/profile.entity";
 import { User } from "../users/entities/user.entity";
@@ -33,6 +34,9 @@ import { GenerateCaptchaDto } from "./dto/generate-captcha.dto";
 import { RegisterAuthDto } from "./dto/register-auth.dto";
 import { ResetPasswordAuthDto } from "./dto/reset-password-auth.dto";
 import { TokenService, type TokenPair } from "./token.service";
+
+const CAPTCHA_TTL_MS = 5 * 60 * 1000;
+const CAPTCHA_COOLDOWN_MS = 60 * 1000;
 
 @Injectable()
 export class AuthService {
@@ -53,13 +57,13 @@ export class AuthService {
       throw new FeatureDisabledException("验证码注册未开启");
     }
 
-    const email = dto.email.trim().toLowerCase();
+    const email = normalizeEmail(dto.email);
     const cooldown = await this.cache.get(`captcha:cooldown:${email}`);
     if (cooldown) throw new TooManyRequestsException();
 
     const code = randomInt(100000, 1000000).toString();
-    await this.cache.set(`captcha:code:${email}`, code, 5 * 60 * 1000);
-    await this.cache.set(`captcha:cooldown:${email}`, true, 60 * 1000);
+    await this.cache.set(`captcha:code:${email}`, code, CAPTCHA_TTL_MS);
+    await this.cache.set(`captcha:cooldown:${email}`, true, CAPTCHA_COOLDOWN_MS);
 
     try {
       await this.mailService.sendVerificationCode(
@@ -77,7 +81,7 @@ export class AuthService {
 
   /** 注册账号并创建空资料，事务保证一致性 */
   async register(dto: RegisterAuthDto): Promise<TokenPair> {
-    const email = dto.email.trim().toLowerCase();
+    const email = normalizeEmail(dto.email);
     const { captcha, password } = dto;
 
     const existing = await this.usersService.findByEmail(email);
@@ -165,7 +169,7 @@ export class AuthService {
 
   /** 请求忘记密码验证码，直接反馈邮箱和邮件发送结果。 */
   async requestPasswordReset(dto: ForgotPasswordAuthDto) {
-    const email = dto.email.trim().toLowerCase();
+    const email = normalizeEmail(dto.email);
     const user = await this.usersService.findByEmail(email);
     if (!user) throw new ResourceNotFoundException("该邮箱未注册");
     if (user.status !== 1) throw new AccountDisabledException();
@@ -176,7 +180,7 @@ export class AuthService {
 
   /** 使用邮箱验证码重置密码，并撤销所有旧设备会话。 */
   async resetPassword(dto: ResetPasswordAuthDto) {
-    const email = dto.email.trim().toLowerCase();
+    const email = normalizeEmail(dto.email);
     const user = await this.usersService.findByEmail(email, true);
     if (!user) throw new ResourceNotFoundException("该邮箱未注册");
     if (user.status !== 1) throw new AccountDisabledException();
@@ -219,8 +223,8 @@ export class AuthService {
     if (await this.cache.get(cooldownKey)) throw new TooManyRequestsException();
 
     const code = randomInt(100000, 1000000).toString();
-    await this.cache.set(codeKey, code, 5 * 60 * 1000);
-    await this.cache.set(cooldownKey, true, 60 * 1000);
+    await this.cache.set(codeKey, code, CAPTCHA_TTL_MS);
+    await this.cache.set(cooldownKey, true, CAPTCHA_COOLDOWN_MS);
     try {
       await this.mailService.sendPasswordVerificationCode(email, code);
     } catch {

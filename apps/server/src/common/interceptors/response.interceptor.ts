@@ -9,7 +9,7 @@ import { Observable, map } from "rxjs";
 /** 统一响应格式拦截器，所有成功响应包装为 { code, data, requestId } */
 @Injectable()
 export class ResponseInterceptor implements NestInterceptor {
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest<{ id: string }>();
     return next.handle().pipe(
       map((data) => ({

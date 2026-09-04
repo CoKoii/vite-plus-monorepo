@@ -24,6 +24,15 @@ function getRequest(host: ArgumentsHost) {
   return host.switchToHttp().getRequest<{ id?: string; method: string; url: string }>();
 }
 
+interface HttpErrorBody {
+  code?: unknown;
+  message?: unknown;
+}
+
+interface ResponseWithSent {
+  sent?: boolean;
+}
+
 // ─── 业务异常 ─────────────────────────────────────────────────────
 
 @Catch(BusinessException)
@@ -71,10 +80,16 @@ export class HttpExceptionFilter implements ExceptionFilter {
       code = statusToErrorCode(status);
       message = resp;
     } else {
-      const body = resp as Record<string, any>;
-      code = (body["code"] as string) ?? statusToErrorCode(status);
-      details = Array.isArray(body["message"]) ? (body["message"] as string[]) : undefined;
-      message = details?.join("; ") ?? body["message"] ?? exception.message;
+      const body = resp as HttpErrorBody;
+      code = typeof body.code === "string" ? body.code : statusToErrorCode(status);
+      details =
+        Array.isArray(body.message) &&
+        body.message.every((item): item is string => typeof item === "string")
+          ? body.message
+          : undefined;
+      message =
+        details?.join("; ") ??
+        (typeof body.message === "string" ? body.message : exception.message);
     }
 
     this.logger.warn({
@@ -104,7 +119,7 @@ export class UnknownExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const req = ctx.getRequest<{ id?: string; method: string; url: string }>();
-    const res = ctx.getResponse<any>();
+    const res = ctx.getResponse<ResponseWithSent>();
     if (res.sent) return;
     this.logger.error({
       requestId: req.id,

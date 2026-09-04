@@ -7,6 +7,7 @@ import {
   AuthenticationRequiredException,
   BusinessException,
 } from "../../../../common/errors/business.exception";
+import type { User } from "../../users/entities/user.entity";
 import { IS_PUBLIC_KEY } from "../decorators/public.decorator";
 
 /** 全局 JWT 守卫，标记 @Public() 的接口跳过校验 */
@@ -26,7 +27,11 @@ export class JwtAuthGuard extends AuthGuard("jwt") {
   }
 
   /** JWT 校验失败时统一返回 401 */
-  override handleRequest(err: unknown, user: any, _info: any) {
+  override handleRequest<TUser = User>(
+    err: unknown,
+    user: TUser | undefined,
+    _info: unknown,
+  ): TUser {
     if (err || !user) {
       if (err instanceof BusinessException) throw err;
       throw new AuthenticationRequiredException();

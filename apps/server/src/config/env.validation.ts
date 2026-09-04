@@ -31,27 +31,32 @@ export const envValidationSchema = joi.object({
   MAIL_ENABLED: joi.boolean().default(false),
   SMTP_HOST: joi.when("MAIL_ENABLED", {
     is: true,
+    // oxlint-disable-next-line unicorn/no-thenable
     then: joi.string().required(),
     otherwise: joi.string().optional(),
   }),
   SMTP_PORT: joi.when("MAIL_ENABLED", {
     is: true,
+    // oxlint-disable-next-line unicorn/no-thenable
     then: joi.number().port().required(),
     otherwise: joi.number().port().optional(),
   }),
   SMTP_SECURE: joi.boolean().default(true),
   SMTP_USER: joi.when("MAIL_ENABLED", {
     is: true,
+    // oxlint-disable-next-line unicorn/no-thenable
     then: joi.string().required(),
     otherwise: joi.string().optional(),
   }),
   SMTP_PASSWORD: joi.when("MAIL_ENABLED", {
     is: true,
+    // oxlint-disable-next-line unicorn/no-thenable
     then: joi.string().required(),
     otherwise: joi.string().optional(),
   }),
   SMTP_FROM: joi.when("MAIL_ENABLED", {
     is: true,
+    // oxlint-disable-next-line unicorn/no-thenable
     then: joi.string().required(),
     otherwise: joi.string().optional(),
   }),
@@ -65,6 +70,7 @@ export const envValidationSchema = joi.object({
     .default(false)
     .when("MAIL_ENABLED", {
       is: false,
+      // oxlint-disable-next-line unicorn/no-thenable
       then: joi.valid(false),
     }),
 
