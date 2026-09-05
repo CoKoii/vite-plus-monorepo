@@ -56,7 +56,7 @@ export class AuditService implements OnApplicationShutdown {
       await this.auditRepository.save(batch.map((p) => this.auditRepository.create(p)));
     } catch (e) {
       this.logger.warn(`审计日志批量写入失败，${batch.length} 条待重试`, e);
-      this.buffer.unshift(...batch);
+      this.buffer = [...batch, ...this.buffer].slice(-MAX_BUFFER_SIZE);
     } finally {
       this.flushing = false;
     }

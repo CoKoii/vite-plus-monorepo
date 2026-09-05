@@ -7,7 +7,10 @@ import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import type { Cache } from "cache-manager";
 
-import { TokenInvalidException } from "../../../common/errors/business.exception";
+import {
+  InfrastructureUnavailableException,
+  TokenInvalidException,
+} from "../../../common/errors/business.exception";
 import { parseDuration } from "../../../common/utils/time.util";
 import { REDIS_CLIENT, type RedisClient } from "../../../infrastructure/cache/cache.module";
 import type { User } from "../users/entities/user.entity";
@@ -26,7 +29,18 @@ export interface TokenPair {
 interface RefreshTokenRecord {
   userId: number;
   sessionId: string;
+  tokenVersion: number;
 }
+
+const USER_LOCK_TTL_MS = 30_000;
+const USER_LOCK_WAIT_MS = 25;
+const USER_LOCK_WAIT_LIMIT = 400;
+const RELEASE_USER_LOCK_SCRIPT = `
+if redis.call("GET", KEYS[1]) == ARGV[1] then
+  return redis.call("DEL", KEYS[1])
+end
+return 0
+`;
 
 @Injectable()
 export class TokenService {
@@ -54,6 +68,31 @@ export class TokenService {
     return { accessToken, refreshToken };
   }
 
+  async withUserLock<T>(userId: number, operation: () => Promise<T>): Promise<T> {
+    const key = `auth:lock:user:${userId}`;
+    const lockValue = randomUUID();
+
+    for (let attempt = 0; attempt < USER_LOCK_WAIT_LIMIT; attempt += 1) {
+      const acquired = await this.redisClient.set(key, lockValue, {
+        NX: true,
+        PX: USER_LOCK_TTL_MS,
+      });
+      if (acquired === "OK") {
+        try {
+          return await operation();
+        } finally {
+          await this.redisClient.eval(RELEASE_USER_LOCK_SCRIPT, {
+            keys: [key],
+            arguments: [lockValue],
+          });
+        }
+      }
+      await new Promise((resolve) => setTimeout(resolve, USER_LOCK_WAIT_MS));
+    }
+
+    throw new InfrastructureUnavailableException("会话操作繁忙，请稍后重试");
+  }
+
   /** 签发 JWT access token */
   private async generateAccessToken(user: User): Promise<string> {
     return this.jwtService.signAsync(
@@ -68,7 +107,11 @@ export class TokenService {
   private async generateRefreshToken(user: User, sessionId: string): Promise<string> {
     const raw = randomBytes(48).toString("base64url");
     const hash = this.hashToken(raw);
-    const record = { userId: user.id, sessionId } satisfies RefreshTokenRecord;
+    const record = {
+      userId: user.id,
+      sessionId,
+      tokenVersion: user.tokenVersion,
+    } satisfies RefreshTokenRecord;
     await this.cache.set(`rt:${hash}`, JSON.stringify(record), this.refreshExpiresSec * 1000);
     await this.cache.set(`auth:session:${sessionId}`, hash, this.refreshExpiresSec * 1000);
     await this.redisClient.sAdd(`auth:sessions:${user.id}`, sessionId);
@@ -87,7 +130,11 @@ export class TokenService {
     const record = this.parseRefreshToken(
       this.unwrapCacheValue(await this.redisClient.getDel(`rt:${hash}`)),
     );
-    if (record.userId !== user.id || record.sessionId !== sessionId) {
+    if (
+      record.userId !== user.id ||
+      record.sessionId !== sessionId ||
+      record.tokenVersion !== user.tokenVersion
+    ) {
       throw new TokenInvalidException();
     }
     await this.cache.del(`auth:session:${sessionId}`);
@@ -134,7 +181,12 @@ export class TokenService {
     if (!cached) return null;
     try {
       const record = JSON.parse(cached) as Partial<RefreshTokenRecord>;
-      if (typeof record.userId !== "number" || typeof record.sessionId !== "string") return null;
+      if (
+        typeof record.userId !== "number" ||
+        typeof record.sessionId !== "string" ||
+        !Number.isInteger(record.tokenVersion)
+      )
+        return null;
       return record as RefreshTokenRecord;
     } catch {
       return null;
